@@ -1,0 +1,68 @@
+<aside class="admin-sidebar" style="
+    width: var(--sidebar-width);
+    background: var(--sidebar-bg);
+    color: white;
+    position: fixed;
+    height: 100vh;
+    left: 0;
+    top: 0;
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    border-right: 1px solid rgba(255,255,255,0.1);
+">
+
+    <!-- Header -->
+    <div style="padding: 25px; border-bottom: 1px solid rgba(255,255,255,0.1); text-align: center;">
+        <h3 style="margin: 0; font-weight: 600; letter-spacing: 1px;">EVENTOPIA</h3>
+    </div>
+
+    <!-- Menu principal -->
+    <nav style="flex: 1; padding: 20px 0; display: flex; flex-direction: column;">
+        <!-- Liste des événements -->
+        <a href="{{ path('admin_evenement_liste') }}" 
+           style="color: white; 
+                  padding: 14px 25px; 
+                  margin: 5px 15px; 
+                  display: flex; 
+                  align-items: center; 
+                  text-decoration: none; 
+                  border-radius: 6px;
+                  transition: all 0.3s;
+                  {% if app.request.attributes.get('_route') starts with 'admin_evenement_liste' %}background: rgba(255,255,255,0.15);{% endif %}"
+           class="menu-item">
+           <i class="fas fa-calendar-alt" style="margin-right: 15px; font-size: 1.1rem;"></i>
+           <span>Events</span>
+        </a>
+
+        <!-- Ajouter événement -->
+        <a href="{{ path('admin_evenement_ajouter') }}" 
+           style="color: white; 
+                  padding: 14px 25px; 
+                  margin: 5px 15px; 
+                  display: flex; 
+                  align-items: center; 
+                  text-decoration: none; 
+                  border-radius: 6px;
+                  transition: all 0.3s;
+                  {% if app.request.attributes.get('_route') == 'admin_evenement_ajouter' %}background: rgba(255,255,255,0.15);{% endif %}"
+           class="menu-item">
+           <i class="fas fa-plus-circle" style="margin-right: 15px; font-size: 1.1rem;"></i>
+           <span>Add events </span>
+        </a>
+    </nav>
+
+    <!-- Section utilisateur (simplifiée sans déconnexion) -->
+    <div style="padding: 20px; border-top: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.1);">
+        <div style="display: flex; align-items: center;">
+            <div style="width: 45px; height: 45px; border-radius: 50%; background: rgba(255,255,255,0.1); 
+                     display: flex; align-items: center; justify-content: center; margin-right: 15px;
+                     border: 2px solid #bbe1fa;">
+                <i class="fas fa-user"></i>
+            </div>
+            <div>
+                <div style="font-weight: 500;">Administrateur</div>
+            </div>
+        </div>
+    </div>
+</aside>
