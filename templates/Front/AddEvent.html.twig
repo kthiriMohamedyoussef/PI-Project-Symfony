@@ -1,0 +1,586 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Eventopia | Create an Event{% endblock %}
+
+{% block navbar %}
+    <div style="background-color:white; margin-bottom:95px;">
+        {% include 'Front/navbar.html.twig' %}
+    </div>
+{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <style>
+        /* Elegant color palette */
+        :root {
+            --primary: #2C3E50;
+            --secondary: #E74C3C;
+            --accent: #3498DB;
+            --light-bg: #F9F9F9;
+            --text-dark: #333333;
+            --text-light: #7F8C8D;
+            --border: #ECF0F1;
+        }
+
+        /* Hero Section with background image */
+        .hero-section {
+            width: 100%;
+            padding: 100px 20px;
+            background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), 
+                        url('https://images.unsplash.com/photo-1531058020387-3be344556be6?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80');
+            background-size: cover;
+            background-position: center;
+            text-align: center;
+            margin-bottom: 40px;
+            color: white;
+        }
+
+        .hero-content {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .hero-title {
+            font-size: 2.8rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+
+        .hero-subtitle {
+            font-size: 1.4rem;
+            margin-bottom: 30px;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+        }
+
+        /* Minimalist style */
+        .event-creation-flow {
+            background: var(--light-bg);
+            padding: 3rem 0;
+        }
+        
+        .creation-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            gap: 2rem;
+            padding: 0 1rem;
+        }
+        
+        /* Publication Guide - Modern style without icons */
+        .creation-guide {
+            background: white;
+            border-radius: 8px;
+            padding: 2rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            position: sticky;
+            top: 120px;
+            height: fit-content;
+            border-top: 4px solid var(--accent);
+        }
+        
+        .guide-header {
+            margin-bottom: 1.5rem;
+        }
+        
+        .guide-header h2 {
+            color: var(--primary);
+            font-weight: 700;
+            font-size: 1.4rem;
+            margin-bottom: 0.5rem;
+            position: relative;
+            padding-left: 1.5rem;
+        }
+        
+        .guide-header h2::before {
+            content: "";
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 8px;
+            height: 8px;
+            background: var(--accent);
+            border-radius: 50%;
+        }
+        
+        .guide-step {
+            padding: 1.2rem 0;
+            border-bottom: 1px solid var(--border);
+            position: relative;
+            padding-left: 1.8rem;
+        }
+        
+        .guide-step::before {
+            content: attr(data-step);
+            position: absolute;
+            left: 0;
+            top: 1.2rem;
+            font-weight: bold;
+            color: var(--accent);
+            font-size: 1.1rem;
+        }
+        
+        .guide-step h4 {
+            color: var(--primary);
+            margin-bottom: 0.4rem;
+            font-size: 1.1rem;
+        }
+        
+        /* Minimalist form */
+        .creation-form {
+            background: white;
+            border-radius: 8px;
+            padding: 2.5rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        
+        .form-section {
+            margin-bottom: 3rem;
+        }
+        
+        .section-header {
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid var(--border);
+            position: relative;
+        }
+        
+        .section-header::after {
+            content: "";
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            width: 80px;
+            height: 2px;
+            background: var(--accent);
+        }
+        
+        .section-title {
+            color: var(--primary);
+            font-weight: 700;
+            margin: 0;
+            font-size: 1.4rem;
+        }
+        
+        .form-group {
+            margin-bottom: 1.8rem;
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 0.6rem;
+            font-weight: 600;
+            color: var(--text-dark);
+            font-size: 0.95rem;
+        }
+        
+        .form-input {
+            width: 100%;
+            padding: 0.9rem 1rem;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            transition: all 0.2s;
+            font-size: 1rem;
+            background: white;
+        }
+        
+        .form-input:focus {
+            border-color: var(--accent);
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(52,152,219,0.1);
+        }
+        
+        /* Improved upload zone */
+        .upload-container {
+            position: relative;
+            height: 200px;
+            width: 100%;
+        }
+
+        .upload-zone {
+            height: 100%;
+            width: 100%;
+            border: 2px dashed var(--border);
+            border-radius: 6px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            cursor: pointer;
+            background: #f9fafb;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .upload-zone:hover {
+            border-color: var(--accent);
+            background: var(--light-bg);
+        }
+
+        .upload-icon {
+            font-size: 2rem;
+            color: var(--accent);
+            margin-bottom: 0.75rem;
+        }
+
+        .upload-text {
+            font-size: 0.9rem;
+            margin: 0.25rem 0;
+            color: var(--text-dark);
+        }
+
+        .upload-hint {
+            font-size: 0.8rem;
+            color: var(--text-light);
+        }
+
+        .image-preview {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: none;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+        
+        /* Modern buttons */
+        .form-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 1.2rem;
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border);
+        }
+        
+        .btn-outline {
+            border: 1px solid var(--text-light);
+            color: var(--text-dark);
+            padding: 0.8rem 1.8rem;
+            border-radius: 6px;
+            font-weight: 600;
+            transition: all 0.2s;
+            text-decoration: none;
+            background: white;
+        }
+        
+        .btn-outline:hover {
+            background: var(--light-bg);
+            border-color: var(--primary);
+        }
+        
+        .btn-primary {
+            background: var(--accent);
+            color: white;
+            border: none;
+            padding: 0.8rem 2rem;
+            border-radius: 6px;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+        
+        .btn-primary:hover {
+            background: #2980B9;
+            transform: translateY(-1px);
+        }
+        
+        /* Responsive */
+        @media (max-width: 992px) {
+            .creation-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .creation-guide {
+                position: static;
+                margin-bottom: 2rem;
+            }
+        }
+        
+        @media (max-width: 576px) {
+            .hero-title {
+                font-size: 2rem;
+            }
+            
+            .hero-subtitle {
+                font-size: 1.1rem;
+            }
+            
+            .creation-form {
+                padding: 1.5rem;
+            }
+            
+            .form-actions {
+                flex-direction: column;
+            }
+            
+            .btn-outline,
+            .btn-primary {
+                width: 100%;
+                text-align: center;
+            }
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+<!-- Hero Section with image -->
+<section class="hero-section">
+    <div class="hero-content">
+        <h1 class="hero-title" style="color: white;">Create a Memorable Event</h1>
+        <p style="color: white; font-size: 1.5rem; margin-bottom: 30px;">
+            Share your passion with the world on
+            <span style="color:rgb(21, 52, 228); font-weight: bold;">Eventopia</span>
+        </p>
+    </div>
+</section>
+
+<!-- Main content -->
+<section class="event-creation-flow">
+    <div class="creation-container">
+        <!-- Publication Guide - Minimalist version -->
+        <aside class="creation-guide">
+            <div class="guide-header">
+                <h2>Publication Guide</h2>
+                <p style="color: var(--text-light); font-size: 0.9rem;">Create a successful event by following these steps</p>
+            </div>
+            
+            <div class="guide-step" data-step="1">
+                <h4>Basic Information</h4>
+                <p style="color: var(--text-light); font-size: 0.85rem; line-height: 1.5;">A clear title and complete description increase visibility.</p>
+            </div>
+            
+            <div class="guide-step" data-step="2">
+                <h4>Impactful Visual</h4>
+                <p style="color: var(--text-light); font-size: 0.85rem; line-height: 1.5;">Choose a high-quality image that represents your event.</p>
+            </div>
+            
+            <div class="guide-step" data-step="3">
+                <h4>Practical Details</h4>
+                <p style="color: var(--text-light); font-size: 0.85rem; line-height: 1.5;">Specify the date, location and price to facilitate decision making.</p>
+            </div>
+            
+            <div class="guide-step" data-step="4">
+                <h4>Final Validation</h4>
+                <p style="color: var(--text-light); font-size: 0.85rem; line-height: 1.5;">Review carefully before publishing.</p>
+            </div>
+            
+            <div style="margin-top: 2rem; padding: 1rem; background: var(--light-bg); border-radius: 6px;">
+                <h5 style="color: var(--accent); margin-bottom: 0.5rem; font-size: 0.95rem;">Pro Tip</h5>
+                <p style="color: var(--text-light); font-size: 0.85rem; line-height: 1.5;">Publish at least 3 weeks in advance to maximize registrations.</p>
+            </div>
+        </aside>
+        
+        <!-- Creation form -->
+        <div class="creation-form">
+            {{ form_start(form, {'attr': {'enctype': 'multipart/form-data'}}) }}
+                <!-- Section 1: Basic Information -->
+                <div class="form-section">
+                    <div class="section-header">
+                        <h2 class="section-title">Basic Information</h2>
+                    </div>
+                    
+                    <div class="form-group">
+                        {{ form_label(form.titre, "Event Title*", {'label_attr': {'class': 'form-label'}}) }}
+                        {{ form_widget(form.titre, {'attr': {
+                            'class': 'form-input',
+                            'placeholder': 'Ex: Jazz Under the Stars Concert'
+                        }}) }}
+                        <small style="display: block; margin-top: 0.5rem; color: var(--text-light); font-size: 0.85rem;">50-70 characters recommended</small>
+                        {{ form_errors(form.titre) }}
+                    </div>
+                    
+                    <div class="form-group">
+                        {{ form_label(form.description, "Complete Description*", {'label_attr': {'class': 'form-label'}}) }}
+                        {{ form_widget(form.description, {'attr': {
+                            'class': 'form-input',
+                            'rows': 6,
+                            'placeholder': 'Describe your event in detail...\n\nEx: An exceptional evening with international artists in an enchanting setting.'
+                        }}) }}
+                        {{ form_errors(form.description) }}
+                    </div>
+                    
+                    <div class="form-group">
+                        {{ form_label(form.categorie, "Category*", {'label_attr': {'class': 'form-label'}}) }}
+                        {{ form_widget(form.categorie, {'attr': {'class': 'form-input'}}) }}
+                        {{ form_errors(form.categorie) }}
+                    </div>
+                </div>
+                
+                <!-- Section 2: Visual -->
+                <div class="form-section">
+                    <div class="section-header">
+                        <h2 class="section-title">Visual</h2>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Main Image*</label>
+                        <p style="color: var(--text-light); font-size: 0.9rem; margin-bottom: 0.5rem;">This image will be the main visual element of your page</p>
+                        
+                        <div class="upload-container">
+                            <div class="upload-zone" id="uploadWrapper">
+                                <i class="fas fa-cloud-upload-alt upload-icon"></i>
+                                <div class="upload-text">Click to upload an image</div>
+                                <div class="upload-hint">Formats: JPG, PNG (max 5MB)</div>
+                            </div>
+                            {{ form_widget(form.image, {'attr': {
+                                'style': 'display:none;',
+                                'id': 'evenement_image',
+                                'accept': 'image/*'
+                            }}) }}
+                            <img id="imagePreview" class="image-preview">
+                        </div>
+                        {{ form_errors(form.image) }}
+                    </div>
+                </div>
+                
+                <!-- Section 3: Practical Details -->
+                <div class="form-section">
+                    <div class="section-header">
+                        <h2 class="section-title">Practical Details</h2>
+                    </div>
+                    
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin-bottom: 1.5rem;">
+                        <div class="form-group">
+                            {{ form_label(form.date, "Date and Time*", {'label_attr': {'class': 'form-label'}}) }}
+                            {{ form_widget(form.date, {'attr': {
+                                'class': 'form-input',
+                                'id': 'evenement_date'
+                            }}) }}
+                            {{ form_errors(form.date) }}
+                        </div>
+                        
+                        <div class="form-group">
+                            {{ form_label(form.prix, "Price*", {'label_attr': {'class': 'form-label'}}) }}
+                            <div style="display: flex;">
+                                {{ form_widget(form.prix, {'attr': {
+                                    'class': 'form-input',
+                                    'style': 'border-radius: 6px 0 0 6px;'
+                                }}) }}
+                                <span style="padding: 0.9rem 1rem; background: var(--light-bg); border: 1px solid var(--border); border-left: none; border-radius: 0 6px 6px 0; color: var(--text-light);">TND</span>
+                            </div>
+                            <small style="display: block; margin-top: 0.5rem; color: var(--text-light); font-size: 0.85rem;">0 for a free event</small>
+                            {{ form_errors(form.prix) }}
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        {{ form_label(form.espace, "Location*", {'label_attr': {'class': 'form-label'}}) }}
+                        {{ form_widget(form.espace, {'attr': {
+                            'class': 'form-input'
+                        }}) }}
+                        {{ form_errors(form.espace) }}
+                    </div>
+                </div>
+                
+                <!-- Actions -->
+                <div class="form-actions">
+                    <a href="{{ path('app_home') }}" class="btn-outline">
+                        Cancel
+                    </a>
+                    <button type="submit" class="btn-primary">
+                        Publish Event
+                    </button>
+                </div>
+            {{ form_end(form) }}
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block footer %}
+    {% include 'Front/footer.html.twig' %}
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/fr.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Datepicker configuration
+            flatpickr('#evenement_date', {
+                enableTime: true,
+                dateFormat: "Y-m-d H:i",
+                minDate: "today",
+                locale: "fr",
+                time_24hr: true,
+                minuteIncrement: 15
+            });
+            
+            // Image upload handling
+            const imageInput = document.getElementById('evenement_image');
+            const preview = document.getElementById('imagePreview');
+            const uploadWrapper = document.getElementById('uploadWrapper');
+            const originalContent = uploadWrapper.innerHTML;
+            
+            uploadWrapper.addEventListener('click', function(e) {
+                e.preventDefault();
+                imageInput.click();
+            });
+            
+            imageInput.addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        preview.src = e.target.result;
+                        preview.style.display = 'block';
+                        uploadWrapper.innerHTML = '';
+                        uploadWrapper.appendChild(preview);
+                    }
+                    reader.readAsDataURL(file);
+                } else {
+                    preview.style.display = 'none';
+                    uploadWrapper.innerHTML = originalContent;
+                }
+            });
+
+            // Drag and drop handling
+            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                uploadWrapper.addEventListener(eventName, preventDefaults, false);
+            });
+
+            function preventDefaults(e) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+
+            ['dragenter', 'dragover'].forEach(eventName => {
+                uploadWrapper.addEventListener(eventName, highlight, false);
+            });
+
+            ['dragleave', 'drop'].forEach(eventName => {
+                uploadWrapper.addEventListener(eventName, unhighlight, false);
+            });
+
+            function highlight() {
+                uploadWrapper.style.borderColor = 'var(--accent)';
+                uploadWrapper.style.backgroundColor = 'var(--light-bg)';
+            }
+
+            function unhighlight() {
+                uploadWrapper.style.borderColor = 'var(--border)';
+                uploadWrapper.style.backgroundColor = '#f9fafb';
+            }
+
+            // Handle dropped files
+            uploadWrapper.addEventListener('drop', function(e) {
+                const dt = e.dataTransfer;
+                const files = dt.files;
+                
+                if (files.length) {
+                    imageInput.files = files;
+                    const event = new Event('change');
+                    imageInput.dispatchEvent(event);
+                }
+            });
+        });
+    </script>
+{% endblock %}

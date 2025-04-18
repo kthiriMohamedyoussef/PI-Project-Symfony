@@ -1,0 +1,151 @@
+<aside class="admin-sidebar" style="
+    width: var(--sidebar-width);
+    background: var(--sidebar-bg);
+    color: white;
+    position: fixed;
+    height: 100vh;
+    left: 0;
+    top: 0;
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    border-right: 1px solid rgba(255,255,255,0.1);
+">
+
+    <!-- Header -->
+    <div style="padding: 25px; border-bottom: 1px solid rgba(255,255,255,0.1); text-align: center;">
+        <h3 style="margin: 0; font-weight: 600; letter-spacing: 1px;">EVENTOPIA</h3>
+    </div>
+
+    <!-- Menu principal -->
+    <nav style="flex: 1; padding: 20px 0; display: flex; flex-direction: column;">
+        <!-- Events Dropdown -->
+        <div style="position: relative;">
+            <div id="events-dropdown-btn" 
+                 style="color: white; 
+                        padding: 14px 25px; 
+                        margin: 5px 15px; 
+                        display: flex; 
+                        align-items: center; 
+                        text-decoration: none; 
+                        border-radius: 6px;
+                        transition: all 0.3s;
+                        cursor: pointer;
+                        {% if app.request.attributes.get('_route') starts with 'admin_evenement_' %}background: rgba(255,255,255,0.15);{% endif %}">
+                <i class="fas fa-calendar" style="margin-right: 15px; font-size: 1.1rem;"></i>
+                <span>Events</span>
+                <i class="fas fa-chevron-down" id="dropdown-chevron" style="margin-left: auto; font-size: 0.9rem; transition: transform 0.3s;"></i>
+            </div>
+
+            <!-- Dropdown Content -->
+            <div id="events-dropdown-content" 
+                 style="display: none; 
+                        margin-left: 30px;
+                        margin-right: 15px;
+                        background: rgba(0,0,0,0.2); 
+                        border-radius: 0 0 6px 6px;
+                        overflow: hidden;">
+                <!-- List View -->
+                <a href="{{ path('admin_evenement_liste') }}" 
+                   style="color: white; 
+                          padding: 12px 25px; 
+                          display: flex; 
+                          align-items: center; 
+                          text-decoration: none; 
+                          transition: all 0.3s;
+                          {% if app.request.attributes.get('_route') starts with 'admin_evenement_liste' %}background: rgba(255,255,255,0.15);{% endif %}">
+                   <i class="fas fa-list" style="margin-right: 15px; font-size: 1rem;"></i>
+                   <span>List Events</span>
+                </a>
+
+                <!-- Calendar -->
+                <a href="{{ path('admin_evenement_calendar') }}" 
+                   style="color: white; 
+                          padding: 12px 25px; 
+                          display: flex; 
+                          align-items: center; 
+                          text-decoration: none; 
+                          transition: all 0.3s;
+                          {% if app.request.attributes.get('_route') == 'admin_evenement_calendar' %}background: rgba(255,255,255,0.15);{% endif %}">
+                   <i class="fas fa-calendar-alt" style="margin-right: 15px; font-size: 1rem;"></i>
+                   <span>Calendar</span>
+                </a>
+
+                <!-- Add Event -->
+                <a href="{{ path('admin_evenement_ajouter') }}" 
+                   style="color: white; 
+                          padding: 12px 25px; 
+                          display: flex; 
+                          align-items: center; 
+                          text-decoration: none; 
+                          transition: all 0.3s;
+                          {% if app.request.attributes.get('_route') == 'admin_evenement_ajouter' %}background: rgba(255,255,255,0.15);{% endif %}">
+                   <i class="fas fa-plus-circle" style="margin-right: 15px; font-size: 1rem;"></i>
+                   <span>Add Event</span>
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Section utilisateur -->
+    <div style="padding: 20px; border-top: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.1);">
+        <div style="display: flex; align-items: center;">
+            <div style="width: 45px; height: 45px; border-radius: 50%; background: rgba(255,255,255,0.1); 
+                     display: flex; align-items: center; justify-content: center; margin-right: 15px;
+                     border: 2px solid #bbe1fa;">
+                <i class="fas fa-user"></i>
+            </div>
+            <div>
+                <div style="font-weight: 500;">Administrator</div>
+            </div>
+        </div>
+    </div>
+</aside>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const dropdownBtn = document.getElementById('events-dropdown-btn');
+    const dropdownContent = document.getElementById('events-dropdown-content');
+    const chevron = document.getElementById('dropdown-chevron');
+    
+    // Toggle dropdown on click
+    dropdownBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        const isOpen = dropdownContent.style.display === 'block';
+        dropdownContent.style.display = isOpen ? 'none' : 'block';
+        chevron.style.transform = isOpen ? 'rotate(0deg)' : 'rotate(180deg)';
+    });
+    
+    // Close dropdown when clicking anywhere else
+    document.addEventListener('click', function() {
+        dropdownContent.style.display = 'none';
+        chevron.style.transform = 'rotate(0deg)';
+    });
+    
+    // Prevent dropdown from closing when clicking inside it
+    dropdownContent.addEventListener('click', function(e) {
+        e.stopPropagation();
+    });
+});
+</script>
+
+<style>
+#events-dropdown-content a:hover {
+    background: rgba(255,255,255,0.1) !important;
+}
+
+#events-dropdown-btn:hover {
+    background: rgba(255,255,255,0.1) !important;
+}
+
+#events-dropdown-content {
+    animation: fadeIn 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+</style>

@@ -1,0 +1,3 @@
+<?php //434912e30e5123d37b11e3d29d8b6321
+
+return [PHP_INT_MAX, 'js/jquery.min.js'];
