@@ -3,6 +3,11 @@
 {% block stylesheets %}
     {{ parent() }}
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<<<<<<< HEAD
+=======
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+>>>>>>> 923b300 (metiers API)
     <style>
         :root {
             --primary: #0f4c75;
@@ -251,9 +256,26 @@
     <div class="admin-content-container">
         <div class="page-header">
             <h1 class="page-title"><i class="fas fa-list"></i> Liste des Espaces</h1>
+<<<<<<< HEAD
             <a href="{{ path('admin_espace_create') }}" class="btn btn-primary">
                 <i class="fas fa-plus"></i> Ajouter un Espace
             </a>
+=======
+            <div class="d-flex gap-2">
+                <a href="{{ path('admin_espace_create') }}" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Ajouter un Espace
+                </a>
+                <a href="{{ path('admin_espace_export', { q: searchTerm ?? '', etat: selectedEtatFilter ?? 'all' }) }}" class="btn btn-success">
+    <i class="fas fa-file-excel"></i> Exporter en Excel
+</a>
+<a href="{{ path('admin_espace_export_pdf', { q: searchTerm ?? '', etat: selectedEtatFilter ?? 'all' }) }}" class="btn btn-danger">
+    <i class="fas fa-file-pdf"></i> Exporter en PDF
+</a>
+                <button type="button" class="btn btn-info" data-bs-toggle="modal" data-bs-target="#statisticsModal">
+                    <i class="fas fa-chart-pie"></i> Statistiques
+                </button>
+            </div>
+>>>>>>> 923b300 (metiers API)
         </div>
         {# Display flash messages #}
         {% for type, messages in app.flashes %}
@@ -356,6 +378,38 @@
             </div>
         {% endif %}
     </div>
+<<<<<<< HEAD
+=======
+
+    <!-- Modal for Statistics -->
+    <div class="modal fade" id="statisticsModal" tabindex="-1" aria-labelledby="statisticsModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="statisticsModalLabel">Statistiques des Espaces</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <!-- Pie Chart for État -->
+                        <div class="col-md-6">
+                            <h6>Répartition par État</h6>
+                            <canvas id="etatChart" width="400" height="400"></canvas>
+                        </div>
+                        <!-- Pie Chart for Type d'Espace -->
+                        <div class="col-md-6">
+                            <h6>Répartition par Type d'Espace</h6>
+                            <canvas id="typeEspaceChart" width="400" height="400"></canvas>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                </div>
+            </div>
+        </div>
+    </div>
+>>>>>>> 923b300 (metiers API)
 {% endblock %}
 {% block javascripts %}
     {{ parent() }}
@@ -404,4 +458,111 @@
             });
         });
     </script>
+<<<<<<< HEAD
+=======
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const etatChartCtx = document.getElementById('etatChart').getContext('2d');
+            const typeEspaceChartCtx = document.getElementById('typeEspaceChart').getContext('2d');
+
+            // Fetch statistics data from the backend
+            fetch("{{ path('admin_espace_statistics') }}")
+                .then(response => response.json())
+                .then(data => {
+                    // Helper function to calculate percentages
+                    const calculatePercentages = (data) => {
+                        const total = Object.values(data).reduce((sum, value) => sum + value, 0);
+                        return Object.fromEntries(
+                            Object.entries(data).map(([key, value]) => [key, ((value / total) * 100).toFixed(1)])
+                        );
+                    };
+
+                    // Calculate percentages for État and Type d'Espace
+                    const etatPercentages = calculatePercentages(data.etat);
+                    const typeEspacePercentages = calculatePercentages(data.typeEspace);
+
+                    // Render État Chart
+                    new Chart(etatChartCtx, {
+                        type: 'pie',
+                        data: {
+                            labels: Object.keys(data.etat),
+                            datasets: [{
+                                data: Object.values(data.etat),
+                                backgroundColor: ['#4fd69c', '#ff6b6b'], // Green and Red colors
+                                borderColor: ['#4fd69c', '#ff6b6b'],
+                                borderWidth: 1
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            plugins: {
+                                legend: { position: 'top' },
+                                tooltip: {
+                                    callbacks: {
+                                        label: function (context) {
+                                            const label = context.label || '';
+                                            const value = context.raw || 0;
+                                            const percentage = etatPercentages[label];
+                                            return `${label}: ${value} (${percentage}%)`;
+                                        }
+                                    }
+                                },
+                                datalabels: {
+                                    formatter: (value, context) => {
+                                        const label = context.chart.data.labels[context.dataIndex];
+                                        return `${etatPercentages[label]}%`;
+                                    },
+                                    color: '#fff', // White text for better visibility
+                                    font: { weight: 'bold' }
+                                }
+                            }
+                        },
+                        plugins: [ChartDataLabels] // Enable data labels plugin
+                    });
+
+                    // Render Type d'Espace Chart
+                    new Chart(typeEspaceChartCtx, {
+                        type: 'pie',
+                        data: {
+                            labels: Object.keys(data.typeEspace),
+                            datasets: [{
+                                data: Object.values(data.typeEspace),
+                                backgroundColor: ['#3282b8', '#0f4c75', '#bbdefb', '#64b5f6'], // Blue shades
+                                borderColor: ['#3282b8', '#0f4c75', '#bbdefb', '#64b5f6'],
+                                borderWidth: 1
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            plugins: {
+                                legend: { position: 'top' },
+                                tooltip: {
+                                    callbacks: {
+                                        label: function (context) {
+                                            const label = context.label || '';
+                                            const value = context.raw || 0;
+                                            const percentage = typeEspacePercentages[label];
+                                            return `${label}: ${value} (${percentage}%)`;
+                                        }
+                                    }
+                                },
+                                datalabels: {
+                                    formatter: (value, context) => {
+                                        const label = context.chart.data.labels[context.dataIndex];
+                                        return `${typeEspacePercentages[label]}%`;
+                                    },
+                                    color: '#fff', // White text for better visibility
+                                    font: { weight: 'bold' }
+                                }
+                            }
+                        },
+                        plugins: [ChartDataLabels] // Enable data labels plugin
+                    });
+                })
+                .catch(error => console.error('Error fetching statistics:', error));
+        });
+    </script>
+>>>>>>> 923b300 (metiers API)
 {% endblock %}

@@ -211,6 +211,7 @@
 
     <!-- Espace List -->
     <div class="container">
+<<<<<<< HEAD
         <div id="espaceList">
             <div class="espace-list">
                 {% for espace in espaces %}
@@ -245,10 +246,54 @@
                                             Voir les détails
                                         </a>
                                     </div>
+=======
+    <div id="espaceList">
+        <div class="espace-list">
+            {% for espace in espaces %}
+                <div class="espace-card" data-name="{{ espace.nom|lower }}" data-etat="{{ espace.etat }}">
+                    <div class="row g-0">
+                        <!-- Espace Image (Left Side) -->
+                        <div class="col-md-5">
+                            <div class="espace-image" style="height: 100%;">
+                                {% if espace.imageUrl %}
+                                    <img src="{{ asset('uploads/images/' ~ espace.imageUrl) }}" alt="{{ espace.nom }}">
+                                {% else %}
+                                    <i class="fas fa-image fa-2x"></i>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <!-- Espace Content (Right Side) -->
+                        <div class="col-md-7">
+                            <div class="card-body h-100 d-flex flex-column" style="padding: 2rem;">
+                                <h3 class="espace-title">{{ espace.nom }}</h3>
+                                <!-- Location with Icon -->
+                                <p class="espace-meta">
+                                    <i class="fas fa-map-marker-alt me-2 icon-with-padding"></i>{{ espace.localisation }}
+                                </p>
+                                <!-- Espace Type -->
+                                <p class="espace-type">
+                                    <i class="fas fa-building me-2 icon-with-padding"></i>{{ espace.typeEspace.type }}
+                                </p>
+                                <!-- Status Badge -->
+                                <div class="mt-auto d-flex justify-content-between align-items-center">
+                                    <span class="status-badge {{ espace.etat == 'DISPONIBLE' ? 'available' : 'unavailable' }}">{{ espace.etat }}</span>
+                                    <a href="{{ path('app_espace_details', {'id': espace.id}) }}" class="view-details">
+                                        Voir les détails
+                                    </a>
+                                    <!-- QR Code Button -->
+                                    <button class="qr-code-btn btn btn-sm btn-info" data-id="{{ espace.id }}" title="Générer QR Code">
+                                        <i class="fas fa-qrcode"></i> QR Code
+                                    </button>
+                                </div>
+                                <!-- QR Code Placeholder -->
+                                <div class="qr-code-container mt-3" style="display: none;">
+                                    <img class="qr-code-image" src="" alt="QR Code" style="width: 100px; height: 100px; border: 1px solid #ddd; border-radius: 5px;">
+>>>>>>> 923b300 (metiers API)
                                 </div>
                             </div>
                         </div>
                     </div>
+<<<<<<< HEAD
                 {% endfor %}
             </div>
         </div>
@@ -256,11 +301,55 @@
             Aucun espace trouvé correspondant à votre recherche.
         </div>
     </div>
+=======
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+    <div id="noResults" class="alert alert-info" style="display: none; text-align: center;">
+        Aucun espace trouvé correspondant à votre recherche.
+    </div>
+</div>
+>>>>>>> 923b300 (metiers API)
 {% endblock %}
 
 {% block javascripts %}
     {{ parent() }}
     <script>
+<<<<<<< HEAD
+=======
+    document.addEventListener('DOMContentLoaded', () => {
+    const qrCodeButtons = document.querySelectorAll('.qr-code-btn');
+
+    qrCodeButtons.forEach(button => {
+        button.addEventListener('click', async () => {
+            const espaceId = button.dataset.id;
+            const qrCodeContainer = button.closest('.card-body').querySelector('.qr-code-container');
+            const qrCodeImage = qrCodeContainer.querySelector('.qr-code-image');
+
+            try {
+                // Fetch the QR code from the backend
+                const response = await fetch(`/espace/${espaceId}/qrcode`);
+                const data = await response.json();
+
+                if (data.error) {
+                    alert(data.message); // Show error message
+                    return;
+                }
+
+                // Set the QR code image source
+                qrCodeImage.src = data.qr_code;
+
+                // Show the QR code container
+                qrCodeContainer.style.display = 'block';
+            } catch (error) {
+                console.error('Error fetching QR code:', error);
+                alert('Une erreur est survenue lors de la génération du QR Code.');
+            }
+        });
+    });
+});
+>>>>>>> 923b300 (metiers API)
         // Search functionality
         document.addEventListener('DOMContentLoaded', function () {
             const searchInput = document.getElementById('searchInput');
