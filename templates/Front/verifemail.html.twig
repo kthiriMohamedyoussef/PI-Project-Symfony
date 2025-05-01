@@ -1,0 +1,374 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Email Verification | Eventopia{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #03045F;
+            --primary-light: #1A1A8F;
+            --primary-dark: #02034A;
+            --accent: #FF6B6B;
+            --light: #f8fafc;
+            --dark: #1e293b;
+            --success: #10b981;
+            --error: #ef4444;
+            --warning: #f59e0b;
+            --info: #3b82f6;
+            --radius: 12px;
+            --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background: white;
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            min-height: 100vh;
+            color: var(--dark);
+            line-height: 1.5;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+        }
+
+        /* Navbar - Left aligned */
+        .navbar {
+            width: 100%;
+            background-color: white;
+            padding: 1.25rem 2rem;
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 1000;
+            display: flex;
+            justify-content: flex-start;
+            align-items: center;
+            border-bottom: 1px solid #f1f1f1;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .navbar-brand {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+        }
+
+        .verification-container {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 7rem 1.5rem 2rem;
+            min-height: 100vh;
+        }
+
+        .verification-card {
+            width: 100%;
+            max-width: 480px;
+            background: white;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: 2.5rem;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            transform: translateY(20px);
+            opacity: 0;
+            animation: fadeInUp 0.6s 0.2s forwards;
+        }
+
+        @keyframes fadeInUp {
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        /* Animated Event Icons */
+        .event-icons {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            pointer-events: none;
+            overflow: hidden;
+            z-index: 1;
+        }
+
+        .event-icon {
+            position: absolute;
+            color: rgba(3, 4, 95, 0.1);
+            font-size: 1.75rem;
+            opacity: 0;
+            animation: floatIn 8s infinite ease-in-out;
+        }
+
+        @keyframes floatIn {
+            0% {
+                transform: translateY(20px) rotate(0deg);
+                opacity: 0;
+            }
+            20% {
+                opacity: 0.15;
+            }
+            50% {
+                transform: translateY(-10px) rotate(5deg);
+            }
+            80% {
+                opacity: 0.15;
+            }
+            100% {
+                transform: translateY(20px) rotate(0deg);
+                opacity: 0;
+            }
+        }
+
+        /* Form Styling */
+        .card-content {
+            position: relative;
+            z-index: 2;
+        }
+
+        .verification-header {
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .verification-title {
+            font-size: 1.75rem;
+            font-weight: 700;
+            margin-bottom: 0.75rem;
+            color: var(--primary);
+            position: relative;
+        }
+
+        .verification-title::after {
+            content: '';
+            position: absolute;
+            bottom: -8px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 50px;
+            height: 3px;
+            background: var(--accent);
+            border-radius: 3px;
+        }
+
+        .verification-instructions {
+            color: #64748b;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        /* Input Container */
+        .input-container {
+            text-align: center;
+            margin: 2rem 0;
+            transform: translateY(10px);
+            opacity: 0;
+            animation: fadeInUp 0.5s 0.4s forwards;
+        }
+
+        .input-container input {
+            width: 100%;
+            max-width: 300px;
+            height: 60px;
+            text-align: center;
+            font-size: 1.5rem;
+            font-weight: 600;
+            letter-spacing: 0.1em;
+            border: 2px solid #e2e8f0;
+            border-radius: var(--radius);
+            background-color: #f8fafc;
+            transition: var(--transition);
+            padding: 0.5rem;
+        }
+
+        .input-container input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(3, 4, 95, 0.1);
+            outline: none;
+            background: white;
+        }
+
+        /* Form Group */
+        .form-group {
+            margin-bottom: 1.2rem;
+            position: relative;
+            transform: translateY(10px);
+            opacity: 0;
+            animation: fadeInUp 0.5s 0.4s forwards;
+        }
+
+        /* Submit Button */
+        .btn-verify {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 0.9rem;
+            font-size: 1rem;
+            border-radius: var(--radius);
+            width: 100%;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 0.5rem;
+            transition: var(--transition);
+            transform: translateY(10px);
+            opacity: 0;
+            animation: fadeInUp 0.5s 0.6s forwards;
+        }
+
+        .btn-verify:hover {
+            background: var(--primary-dark);
+        }
+
+        /* Alert Message */
+        .alert-info {
+            background: rgba(59, 130, 246, 0.1);
+            color: var(--primary);
+            padding: 1rem;
+            border-radius: var(--radius);
+            margin-bottom: 1.5rem;
+            border-left: 3px solid var(--info);
+            display: flex;
+            align-items: center;
+            transform: translateY(10px);
+            opacity: 0;
+            animation: fadeInUp 0.5s 0.3s forwards;
+        }
+
+        .alert-info i {
+            margin-right: 0.75rem;
+            color: var(--info);
+            font-size: 1.2rem;
+        }
+
+        /* Event icon positions */
+        .event-icon:nth-child(1) {
+            top: 10%;
+            left: 10%;
+            animation: floatIn 8s infinite;
+        }
+        .event-icon:nth-child(2) {
+            top: 75%;
+            left: 15%;
+            animation: floatIn 9s 1s infinite;
+        }
+        .event-icon:nth-child(3) {
+            top: 30%;
+            left: 85%;
+            animation: floatIn 10s 2s infinite;
+        }
+        .event-icon:nth-child(4) {
+            top: 80%;
+            left: 80%;
+            animation: floatIn 9s 1.5s infinite;
+        }
+
+        @media (max-width: 768px) {
+            .navbar {
+                padding: 1rem 1.5rem;
+            }
+            
+            .verification-container {
+                padding: 6rem 1.5rem 2rem;
+            }
+            
+            .verification-card {
+                padding: 2rem;
+            }
+            
+            .input-container input {
+                height: 50px;
+                font-size: 1.25rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .verification-card {
+                border: none;
+                box-shadow: none;
+            }
+            
+            .event-icons {
+                display: none;
+            }
+            
+            .input-container input {
+                height: 45px;
+                font-size: 1.1rem;
+            }
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+<nav class="navbar">
+    <a href="#" class="navbar-brand">
+        <img src="{{ asset('images/eventopiaa.png') }}" alt="Eventopia Logo" class="logo-img" height="40px"> Eventopia
+    </a>
+</nav>
+
+<div class="verification-container">
+    <div class="verification-card">
+        <div class="event-icons">
+            <i class="fas fa-envelope event-icon"></i>
+            <i class="fas fa-shield-alt event-icon"></i>
+            <i class="fas fa-check-circle event-icon"></i>
+            <i class="fas fa-user-check event-icon"></i>
+        </div>
+
+        <div class="card-content">
+            <div class="verification-header">
+                <h2 class="verification-title">Email Verification</h2>
+                <p class="verification-instructions">We've sent a verification token to your email address</p>
+            </div>
+
+            {% if message %}
+                <div class="alert-info">
+                    <i class="fas fa-info-circle"></i>
+                    <span>{{ message }}</span>
+                </div>
+            {% endif %}
+
+            <form method="POST" action="{{ path('verify_token') }}">
+                <div class="input-container">
+                    <input type="text" id="token" name="token" maxlength="6" required placeholder="Enter 6-digit code">
+                </div>
+
+                <div class="form-group full-width">
+                    <button type="submit" class="btn-verify">
+                        Verify Email
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Ensure only numeric input and limit it to 6 digits
+        document.getElementById('token').addEventListener('input', function (e) {
+            const tokenField = e.target;
+            tokenField.value = tokenField.value.replace(/\D/g, '').slice(0, 8);
+        });
+        
+        // Auto-focus the input field when page loads
+        document.getElementById('token').focus();
+    });
+</script>
+{% endblock %}

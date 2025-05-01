@@ -1,0 +1,410 @@
+{% extends 'Admin/Gestionevenement/admin_base.html.twig' %}
+
+{% block title %}Gestion des Utilisateurs | Admin{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #0f4c75;
+            --primary-light: #3282b8;
+            --primary-lighter: #bbe1fa;
+            --light: #f8f9fc;
+            --border: #e0e3e8;
+            --text: #2d3748;
+            --text-light: #718096;
+            --success: #4fd69c;
+            --warning: #ffc107;
+            --danger: #ff6b6b;
+        }
+
+        .admin-content-container {
+            padding: 2rem;
+            margin-left: 100px;
+            background: var(--light);
+            min-height: 100vh;
+            width: calc(100% - 285px);
+        }
+
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid var(--primary-lighter);
+        }
+
+        .page-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .page-title i {
+            color: var(--primary-light);
+        }
+
+        .table-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+            overflow: hidden;
+        }
+
+        .users-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+        }
+
+        .users-table thead {
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .users-table th {
+            background-color: var(--primary);
+            color: white;
+            padding: 18px;
+            text-align: left;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.85rem;
+            letter-spacing: 0.5px;
+        }
+
+        .users-table th:first-child {
+            padding-left: 24px;
+        }
+
+        .users-table th:last-child {
+            padding-right: 24px;
+        }
+
+        .users-table tbody tr {
+            background: white;
+            transition: all 0.3s ease;
+        }
+
+        .users-table tbody tr:not(:last-child) {
+            border-bottom: 1px solid var(--border);
+        }
+
+        .users-table tbody tr:hover {
+            background-color: rgba(187, 225, 250, 0.1);
+        }
+
+        .users-table td {
+            padding: 18px;
+            vertical-align: middle;
+            font-size: 0.95rem;
+        }
+
+        .user-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4e8ed 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            margin-right: 12px;
+        }
+
+        .user-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .user-avatar i {
+            color: var(--primary-light);
+            font-size: 1.2rem;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+        }
+
+        .user-name {
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        .user-email {
+            font-size: 0.85rem;
+            color: var(--text-light);
+            margin-top: 4px;
+        }
+
+        .user-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .action-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: white;
+            border: 1px solid var(--border);
+            transition: all 0.3s ease;
+        }
+
+        .action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        .action-btn.edit {
+            color: var(--primary-light);
+            border-color: var(--primary-light);
+        }
+
+        .action-btn.edit:hover {
+            background: var(--primary-light);
+            color: white;
+        }
+
+        .action-btn.delete {
+            color: var(--danger);
+            border-color: var(--danger);
+        }
+
+        .action-btn.delete:hover {
+            background: var(--danger);
+            color: white;
+        }
+
+        .empty-state {
+            padding: 3rem 2rem;
+            text-align: center;
+        }
+
+        .empty-icon {
+            font-size: 3rem;
+            color: var(--primary-lighter);
+            margin-bottom: 1.5rem;
+        }
+
+        .empty-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 0.75rem;
+        }
+
+        .empty-text {
+            color: var(--text-light);
+            margin-bottom: 1.5rem;
+        }
+
+        .table-controls {
+            margin-bottom: 1.5rem;
+        }
+
+        .search-box {
+            position: relative;
+            width: 300px;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 10px 15px 10px 40px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+
+        .search-input:focus {
+            border-color: var(--primary-light);
+            box-shadow: 0 0 0 3px rgba(50, 130, 184, 0.2);
+            outline: none;
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-light);
+        }
+
+        .search-clear {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-light);
+            cursor: pointer;
+            display: none;
+        }
+
+        .search-clear.active {
+            display: block;
+        }
+
+        @media (max-width: 992px) {
+            .admin-content-container {
+                width: calc(100% - 100px);
+                padding: 1.5rem;
+            }
+            
+            .users-table {
+                display: block;
+                overflow-x: auto;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .search-box {
+                width: 100%;
+            }
+        }
+    </style>
+{% endblock %}
+
+{% block admin_content %}
+<div class="admin-content-container">
+    <div class="page-header">
+        <h1 class="page-title">
+            <i class="fas fa-users-cog"></i> Gestion des Utilisateurs
+        </h1>
+    </div>
+
+    <form method="get" action="{{ path('admin_utilisateur') }}" class="table-controls">
+        <div class="search-box">
+            <i class="fas fa-search search-icon"></i>
+            <input type="text" 
+                   name="q" 
+                   class="search-input" 
+                   placeholder="Rechercher un utilisateur..."
+                   value="{{ searchTerm ?? '' }}">
+            {% if searchTerm %}
+                <a href="{{ path('admin_utilisateur') }}" 
+                   class="search-clear active"
+                   title="Effacer la recherche">
+                    <i class="fas fa-times"></i>
+                </a>
+            {% endif %}
+        </div>
+    </form>
+
+    <div class="table-card">
+        <table class="users-table">
+            <thead>
+                <tr>
+                    <th>Utilisateur</th>
+                    <th>Contact</th>
+                    <th>Rôle</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for user in users %}
+                <tr>
+                    <td>
+                        <div class="user-info">
+                            <div class="user-avatar">
+                                {% if user.imageurl %}
+                                    <img src="{{ asset(user.imageurl) }}" alt="{{ user.nom }}">
+                                {% else %}
+                                    <i class="fas fa-user"></i>
+                                {% endif %}
+                            </div>
+                            <div>
+                                <div class="user-name">{{ user.nom }} {{ user.prenom }}</div>
+                                <div class="user-email">{{ user.email ?: 'Aucun email' }}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        {{ user.tel ?: 'Aucun téléphone' }}<br>
+                        <small>{{ user.adresse ? user.adresse.fullAddress() : 'Aucune adresse' }}</small>
+                    </td>
+                    <td>
+                        {{ user.role.value }}
+                    </td>
+                    <td>
+                        <div class="user-actions">
+                            <a href="{{ path('admin_update_utilisateur', { id: user.id }) }}" 
+                               class="action-btn edit"
+                               title="Modifier">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            <form method="post" 
+                                  action="{{ path('admin_delete_utilisateur', {'id': user.id}) }}" 
+                                  onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cet utilisateur ?');">
+                                <input type="hidden" name="_token" value="{{ csrf_token('delete-user-' ~ user.id) }}">
+                                <button type="submit" class="action-btn delete" title="Supprimer">
+                                    <i class="fas fa-trash-alt"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="4" class="empty-state">
+                        <i class="fas fa-users-slash empty-icon"></i>
+                        <h3 class="empty-title">
+                            {% if searchTerm %}
+                                Aucun résultat trouvé
+                            {% else %}
+                                Aucun utilisateur enregistré
+                            {% endif %}
+                        </h3>
+                        <p class="empty-text">
+                            {% if searchTerm %}
+                                Essayez avec d'autres termes de recherche
+                            {% else %}
+                                Commencez par ajouter un nouvel utilisateur
+                            {% endif %}
+                        </p>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.querySelector('.search-input');
+    const searchClear = document.querySelector('.search-clear');
+    let searchTimer;
+
+    searchInput?.addEventListener('input', function() {
+        clearTimeout(searchTimer);
+        searchTimer = setTimeout(() => {
+            this.closest('form').submit();
+        }, 500);
+    });
+
+    searchClear?.addEventListener('click', function(e) {
+        e.preventDefault();
+        window.location.href = this.href;
+    });
+
+    if (searchInput) {
+        searchInput.addEventListener('input', function() {
+            searchClear?.classList.toggle('active', this.value.length > 0);
+        });
+    }
+});
+</script>
+{% endblock %}

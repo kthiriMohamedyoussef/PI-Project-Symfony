@@ -1,0 +1,477 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Eventopia | Espaces{% endblock %}
+
+{% block navbar %}
+    <div style="background-color:white; margin-bottom:95px;">
+        {% include 'Front/navbar.html.twig' %}
+    </div>
+{% endblock %}
+
+{% block body %}
+    <!-- Hero Banner -->
+    <div class="container-fluid mt-5 mb-5" style="padding-left:4%; padding-right:4%;">
+        <div style="width: 100%; text-align: center; margin-bottom: 50px;
+        background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)),
+        url('https://img.freepik.com/free-photo/warm-welcoming-atmosphere-as-guests-arrive-party-venue_1268-30713.jpg?t=st=1744966594~exp=1744970194~hmac=4f846145cb6641040a8083015d02e5ff7a083df5439e9a60185ea690cdebcbed&w=1380');
+        background-size: cover;
+        background-position: center;
+        padding: 100px 20px;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+            <h1 style="color: white; font-weight: bold; font-size: 3rem; margin-bottom: 20px;">Discover Amazing Spaces</h1>
+            <p style="color: white; font-size: 1.5rem; margin-bottom: 30px;">
+                Find the perfect venue for your next event with
+                <span style="color: #ffc107; font-weight: bold;">Eventopia</span>
+            </p>
+        </div>
+    </div>
+
+    <!-- Modern Search Bar -->
+    <div class="container mb-5" style="max-width: 800px;">
+        <div class="search-container">
+            <span class="search-icon-left">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M11 19C15.4183 19 19 15.4183 19 11C19 6.58172 15.4183 3 11 3C6.58172 3 3 6.58172 3 11C3 15.4183 6.58172 19 11 19Z" stroke="#6e8efb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M21 21L16.65 16.65" stroke="#6e8efb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </span>
+            <input type="text" 
+                   id="searchInput" 
+                   class="search-input" 
+                   placeholder="Find venues, locations, and more..." 
+                   aria-label="Search spaces">
+            <span class="search-clear" id="searchClear" style="display: none;">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M18 6L6 18" stroke="#6e8efb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M6 6L18 18" stroke="#6e8efb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </span>
+        </div>
+    </div>
+
+    <!-- Filter Buttons -->
+    <div class="container mb-4" style="max-width: 800px;">
+        <div class="filters-container">
+            <button class="filter-btn active" data-filter="all">All Spaces</button>
+            <button class="filter-btn" data-filter="DISPONIBLE">Available</button>
+            <button class="filter-btn" data-filter="INDISPONIBLE">Unavailable</button>
+        </div>
+    </div>
+
+    <!-- Espaces List -->
+    <div class="container-fluid mb-5" style="padding-left:8%; padding-right:8%;">
+        <div id="espaceList">
+            {% for espace in espaces %}
+                <!-- Espace Card -->
+                <div class="card mb-4 espace-card" style="border-radius: 10px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.1);" 
+                     data-name="{{ espace.nom|lower }}" data-etat="{{ espace.etat }}">
+                    <div class="row g-0">
+                        <!-- Espace Image (Left Side) -->
+                        <div class="col-md-5">
+                            <div style="height: 100%; min-height: 300px; background: linear-gradient(135deg, #f5f7fa 0%, #e4e8ed 100%);">
+                                {% if espace.imageUrl %}
+                                    <img src="{{ asset('uploads/images/' ~ espace.imageUrl) }}" 
+                                         class="img-fluid h-100 w-100" 
+                                         style="object-fit: cover;" 
+                                         alt="{{ espace.nom }}">
+                                {% else %}
+                                    <div class="d-flex align-items-center justify-content-center h-100">
+                                        <i class="fas fa-image fa-5x text-muted"></i>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Espace Content (Right Side) -->
+                        <div class="col-md-7">
+                            <div class="card-body h-100 d-flex flex-column" style="padding: 2rem;">
+                                <h3 class="card-title">{{ espace.nom }}</h3>
+                                <p class="card-text text-muted mb-3">
+                                    <i class="fas fa-map-marker-alt me-2"></i>
+                                    {{ espace.localisation }}
+                                    <span class="mx-2">•</span>
+                                    <i class="fas fa-building me-2"></i>
+                                    {{ espace.typeEspace.type }}
+                                </p>
+
+                                <div class="mt-auto d-flex justify-content-between align-items-center">
+                                    <span class="status-badge {{ espace.etat == 'DISPONIBLE' ? 'available' : 'unavailable' }}">
+                                        {{ espace.etat }}
+                                    </span>
+                                    <div class="d-flex align-items-center">
+                                        <!-- QR Code Button -->
+                                        <button class="btn btn-sm btn-outline-secondary me-2 qr-code-btn" 
+                                                data-id="{{ espace.id }}" 
+                                                title="Generate QR Code">
+                                            <i class="fas fa-qrcode me-1"></i> QR Code
+                                        </button>
+                                        <!-- Details Button -->
+                                        <a href="{{ path('app_espace_details', {'id': espace.id}) }}" 
+                                           class="btn btn-outline-primary me-2">
+                                            View Details
+                                        </a>
+                                        <!-- Reservation Button -->
+                                        {% if espace.etat == 'DISPONIBLE' %}
+                                            <a href="{{ path('app_reserve_espace', {'espaceId': espace.id, 'eventId': app.request.query.get('eventId')}) }}" 
+                                               class="btn btn-primary px-4 py-2"
+                                               onclick="return confirm('Are you sure you want to reserve this space?')">
+                                                <i class="fas fa-calendar-check me-1"></i> Reserve
+                                            </a>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <!-- QR Code Container (hidden by default) -->
+                                <div class="qr-code-container mt-3 text-center" style="display: none;">
+                                    <img class="qr-code-image" src="" alt="QR Code" style="width: 150px; height: 150px; border: 1px solid #ddd; border-radius: 5px;">
+                                    <p class="mt-2 text-muted">Scan this QR code for space information</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% else %}
+                <div class="alert alert-info">
+                    No spaces found.
+                </div>
+            {% endfor %}
+        </div>
+        <div id="noResults" class="alert alert-info" style="display: none; text-align: center;">
+            No spaces found matching your search
+        </div>
+    </div>
+
+    <!-- Pagination -->
+    <div class="pagination">
+        {% if currentPage > 1 %}
+            <a href="{{ path('app_espaces', {'page': currentPage - 1, 'eventId': eventId}) }}">&laquo; Previous</a>
+        {% endif %}
+
+        {% for page in 1..totalPages %}
+            {% if page == currentPage %}
+                <span class="current">{{ page }}</span>
+            {% else %}
+                <a href="{{ path('app_espaces', {'page': page, 'eventId': eventId}) }}">{{ page }}</a>
+            {% endif %}
+        {% endfor %}
+
+        {% if currentPage < totalPages %}
+            <a href="{{ path('app_espaces', {'page': currentPage + 1, 'eventId': eventId}) }}">Next &raquo;</a>
+        {% endif %}
+    </div>
+{% endblock %}
+
+{% block footer %}
+    {% include 'Front/footer.html.twig' %}
+{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Modern Search Bar Styles */
+        .search-container {
+            position: relative;
+            display: flex;
+            align-items: center;
+            background: white;
+            border-radius: 30px;
+            box-shadow: 0 2px 15px rgba(0,0,0,0.08);
+            overflow: hidden;
+            transition: all 0.3s ease;
+            border: 1px solid #e0e0e0;
+            padding: 0.8rem 1.5rem;
+        }
+        
+        .search-container:focus-within {
+            box-shadow: 0 2px 20px rgba(0,0,0,0.12);
+            border-color: #a777e3;
+        }
+        
+        .search-icon-left {
+            margin-right: 12px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .search-input {
+            flex: 1;
+            border: none;
+            padding: 0.2rem 0;
+            font-size: 1.05rem;
+            outline: none;
+            background: transparent;
+            color: #333;
+            font-weight: 400;
+        }
+        
+        .search-input::placeholder {
+            color: #aaa;
+            font-weight: 400;
+        }
+        
+        .search-clear {
+            margin-left: 12px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            transition: all 0.2s ease;
+        }
+        
+        .search-clear:hover {
+            transform: scale(1.1);
+        }
+
+        /* Espace Cards */
+        .espace-card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border: none;
+        }
+        
+        .espace-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+        
+        /* No results message */
+        #noResults {
+            border-radius: 10px;
+            background: #f8f9fa;
+            border: 1px solid #e0e0e0;
+            color: #6c757d;
+            text-align: center;
+            padding: 1.5rem;
+            margin-top: 2rem;
+        }
+        
+        /* Status badges */
+        .status-badge {
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        
+        .status-badge.available {
+            background-color: #4fd69c;
+            color: white;
+        }
+        
+        .status-badge.unavailable {
+            background-color: #ff6b6b;
+            color: white;
+        }
+
+        /* Filter buttons */
+        .filters-container {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-bottom: 1rem;
+        }
+        
+        .filter-btn {
+            padding: 0.5rem 1.5rem;
+            border: none;
+            border-radius: 30px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background-color: #f8f9fc;
+            color: #6c757d;
+        }
+        
+        .filter-btn.active {
+            background-color: #6e8efb;
+            color: white;
+        }
+        
+        .filter-btn:hover:not(.active) {
+            background-color: #e9ecef;
+        }
+
+        /* Buttons */
+        .btn-primary {
+            background-color: #6e8efb;
+            border-color: #6e8efb;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary:hover {
+            background-color: #5d7de8;
+            border-color: #5d7de8;
+            transform: translateY(-2px);
+        }
+        
+        .btn-outline-primary {
+            border-color: #6e8efb;
+            color: #6e8efb;
+        }
+        
+        .btn-outline-primary:hover {
+            background-color: #6e8efb;
+            color: white;
+        }
+        
+        .btn-outline-secondary {
+            border-color: #6c757d;
+            color: #6c757d;
+        }
+        
+        .btn-outline-secondary:hover {
+            background-color: #6c757d;
+            color: white;
+        }
+
+        /* Map and building icons */
+        .fa-map-marker-alt, .fa-building {
+            color: #6e8efb;
+        }
+
+        /* Pagination */
+        .pagination {
+            display: flex;
+            gap: 0.5rem;
+            justify-content: center;
+            margin-top: 2rem;
+            margin-bottom: 2rem;
+        }
+        
+        .pagination a {
+            padding: 0.5rem 1rem;
+            background: #f0f0f0;
+            border-radius: 4px;
+            text-decoration: none;
+            color: black;
+            transition: all 0.3s ease;
+        }
+        
+        .pagination a:hover {
+            background: #6e8efb;
+            color: white;
+        }
+        
+        .pagination .current {
+            padding: 0.5rem 1rem;
+            background: #6e8efb;
+            color: white;
+            border-radius: 4px;
+        }
+    </style>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // QR Code Generation
+            const qrCodeButtons = document.querySelectorAll('.qr-code-btn');
+
+            qrCodeButtons.forEach(button => {
+                button.addEventListener('click', async () => {
+                    const espaceId = button.dataset.id;
+                    const qrCodeContainer = button.closest('.card-body').querySelector('.qr-code-container');
+                    const qrCodeImage = qrCodeContainer.querySelector('.qr-code-image');
+
+                    // Toggle visibility
+                    if (qrCodeContainer.style.display === 'block') {
+                        qrCodeContainer.style.display = 'none';
+                        return;
+                    }
+
+                    try {
+                        // Show loading state
+                        button.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> Generating...';
+                        button.disabled = true;
+                        
+                        // Use absolute URL to ensure the path is correct
+                        const response = await fetch(`/espace/${espaceId}/qrcode`, {
+                            headers: {
+                                'Accept': 'application/json'
+                            }
+                        });
+
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! status: ${response.status}`);
+                        }
+
+                        const data = await response.json();
+                        
+                        if (!data.success) {
+                            throw new Error(data.message);
+                        }
+
+                        qrCodeImage.src = data.qr_code;
+                        qrCodeContainer.style.display = 'block';
+                        
+                    } catch (error) {
+                        console.error('Error:', error);
+                        alert('Failed to generate QR code: ' + error.message);
+                    } finally {
+                        // Reset button state
+                        button.innerHTML = '<i class="fas fa-qrcode me-1"></i> QR Code';
+                        button.disabled = false;
+                    }
+                });
+            });
+
+            // Search functionality
+            const searchInput = document.getElementById('searchInput');
+            const searchClear = document.getElementById('searchClear');
+            const espaceCards = document.querySelectorAll('.espace-card');
+            const noResults = document.getElementById('noResults');
+
+            // Toggle clear button visibility
+            searchInput.addEventListener('input', function() {
+                searchClear.style.display = this.value.trim() ? 'flex' : 'none';
+                filterAndSearch();
+            });
+            
+            // Clear search functionality
+            searchClear.addEventListener('click', function() {
+                searchInput.value = '';
+                searchClear.style.display = 'none';
+                filterAndSearch();
+                searchInput.focus();
+            });
+
+            // Filter by etat functionality
+            const filterBtns = document.querySelectorAll('.filter-btn');
+            filterBtns.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    // Remove 'active' class from all buttons
+                    filterBtns.forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    filterAndSearch();
+                });
+            });
+
+            // Combined filter and search function
+            function filterAndSearch() {
+                const searchTerm = searchInput.value.trim().toLowerCase();
+                const activeFilter = document.querySelector('.filter-btn.active').dataset.filter;
+                let hasResults = false;
+
+                espaceCards.forEach(card => {
+                    const cardName = card.getAttribute('data-name');
+                    const etat = card.getAttribute('data-etat');
+                    
+                    const matchesSearch = searchTerm === '' || cardName.includes(searchTerm);
+                    const matchesFilter = activeFilter === 'all' || etat === activeFilter;
+                    
+                    if (matchesSearch && matchesFilter) {
+                        card.style.display = 'flex';
+                        hasResults = true;
+                    } else {
+                        card.style.display = 'none';
+                    }
+                });
+
+                // Show/hide "No results" message
+                noResults.style.display = hasResults ? 'none' : 'block';
+            }
+        });
+    </script>
+{% endblock %}

@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <title>{% block title %}Admin Eventopia{% endblock %}</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    {% block stylesheets %}
+        <!-- Bootstrap CSS -->
+        <link rel="stylesheet" href="{{ asset('css/bootstrap.min.css') }}">
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+        
+        <!-- Font Awesome Icons -->
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+        
+        <!-- Custom Styles -->
+        <style>
+            :root {
+                --sidebar-width: 280px;
+                --sidebar-bg: linear-gradient(180deg, #0f4c75, #0b2d4a);
+                --primary: #03045F;
+                --light: #F8F9FF;
+                --accent: #bbe1fa;
+                --hover: rgba(255,255,255,0.1);
+                --active: rgba(255,255,255,0.2);
+            }
+            
+            body {
+                overflow-x: hidden;
+                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                background-color: var(--light);
+            }
+            
+            .admin-wrapper {
+                display: flex;
+                min-height: 100vh;
+            }
+            
+            .admin-main {
+                flex: 1;
+                padding: 25px 25px 25px 15px;
+                background: var(--light);
+                min-height: 100vh;
+                margin-left: var(--sidebar-width);
+                width: calc(100% - var(--sidebar-width));
+                transition: all 0.3s;
+            }
+
+            @media (max-width: 992px) {
+                .admin-main {
+                    margin-left: 0;
+                    width: 100%;
+                    padding: 15px;
+                }
+            }
+        </style>
+    {% endblock %}
+</head>
+
+<body>
+    <div class="admin-wrapper">
+        <!-- Sidebar -->
+        {% include 'Admin/Gestionevenement/sidebar.html.twig' %}
+        
+        <!-- Main Content -->
+        <main class="admin-main">
+            {% block admin_content %}{% endblock %}
+        </main>
+    </div>
+
+    {% block javascripts %}
+        <!-- jQuery -->
+        <script src="{{ asset('js/jquery.min.js') }}"></script>
+        
+        <!-- Bootstrap JS (with Popper.js) -->
+        <script src="{{ asset('js/bootstrap.bundle.min.js') }}"></script>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+        
+        <!-- Chart.js -->
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    {% endblock %}
+</body>
+</html>

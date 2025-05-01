@@ -1,0 +1,317 @@
+{% extends 'base.html.twig' %}
+{% block title %}Eventopia | Détails de l'Espace{% endblock %}
+{% block navbar %}
+    <div style="background-color: white; margin-bottom: 95px;">
+        {% include 'Front/navbar.html.twig' %}
+    </div>
+{% endblock %}
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        :root {
+            --primary: #0f4c75;
+            --light: #f8f9fc;
+            --border: #e0e3e8;
+            --text: #2d3748;
+            --text-light: #718096;
+            --success: #4fd69c;
+            --danger: #ff6b6b;
+        }
+        /* Container */
+        .espace-details {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 2rem;
+            background: var(--light);
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            margin: 2rem auto;
+            max-width: 800px;
+        }
+        /* Image Section */
+        .espace-image {
+            width: 100%;
+            max-width: 600px;
+            height: 400px;
+            object-fit: cover;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4e8ed 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+            position: relative;
+        }
+        .espace-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .espace-image i {
+            font-size: 3rem;
+            color: var(--primary);
+        }
+        /* Details Section */
+        .espace-info {
+            text-align: center;
+            width: 100%;
+        }
+        .espace-title {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 1rem;
+        }
+        .espace-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            justify-content: center;
+            font-size: 0.9rem;
+            color: var(--text-light);
+            margin-bottom: 1.5rem;
+        }
+        .espace-meta span {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        .status-active {
+            background-color: rgba(79, 214, 156, 0.15);
+            color: var(--success);
+        }
+        .status-inactive {
+            background-color: rgba(255, 107, 107, 0.15);
+            color: var(--danger);
+        }
+        /* Description Section */
+        .espace-description {
+            font-size: 1rem;
+            color: var(--text);
+            line-height: 1.6;
+            margin-bottom: 2rem;
+            text-align: justify;
+        }
+        /* Back Link */
+        .back-link {
+            display: inline-block;
+            padding: 0.75rem 1.5rem;
+            background: var(--primary);
+            color: white;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: background 0.3s ease;
+            text-align: center;
+            width: fit-content;
+            margin: 0 auto;
+        }
+        .back-link:hover {
+            background: #3282b8;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        /* Map Button */
+        .map-button {
+            display: inline-block;
+            padding: 0.75rem 1.5rem;
+            background: #3282b8;
+            color: white;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: background 0.3s ease;
+            text-align: center;
+            width: fit-content;
+            margin-left: 1rem;
+        }
+        .map-button:hover {
+            background: #3282b8;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+        }
+        .modal-content {
+            background-color: #fff;
+            margin: 10% auto;
+            padding: 20px;
+            border-radius: 12px;
+            width: 80%;
+            max-width: 800px;
+            position: relative;
+        }
+        .close {
+            position: absolute;
+            right: 15px;
+            top: 10px;
+            color: #aaa;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .close:hover {
+            color: #fff;
+        }
+        #map {
+            height: 400px;
+            width: 100%;
+            margin-top: 1rem;
+            border-radius: 8px;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .espace-image {
+                height: 300px;
+            }
+            .espace-title {
+                font-size: 1.5rem;
+            }
+            .espace-meta {
+                font-size: 0.8rem;
+            }
+            .espace-description {
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+{% endblock %}
+{% block body %}
+    <div class="espace-details">
+        <!-- Image Section -->
+        <div class="espace-image">
+            {% if espace.imageUrl %}
+                <img src="{{ asset('uploads/images/' ~ espace.imageUrl) }}" alt="{{ espace.nom }}">
+            {% else %}
+                <i class="fas fa-image"></i>
+            {% endif %}
+        </div>
+
+        <!-- Details Section -->
+        <div class="espace-info">
+            <h1 class="espace-title">{{ espace.nom }}</h1>
+            <div class="espace-meta">
+                <span><i class="fas fa-map-marker-alt"></i> {{ espace.localisation }}</span>
+                <span><i class="fas fa-tags"></i> {{ espace.typeEspace.type }}</span>
+                <span class="status-badge {{ espace.etat == 'DISPONIBLE' ? 'status-active' : 'status-inactive' }}">
+                    {{ espace.etat }}
+                </span>
+            </div>
+            <p class="espace-description">
+                {% if espace.typeEspace.description %}
+                    {{ espace.typeEspace.description }}
+                {% else %}
+                    Aucune description disponible pour cet espace.
+                {% endif %}
+            </p>
+            <div style="display: flex; justify-content: center; align-items: center; gap: 1rem;">
+                <!-- Back Link -->
+                <a href="{{ path('app_espaces') }}" class="back-link">Retour à la liste</a>
+                <!-- Map Button -->
+                <a href="#" class="map-button" id="map-button" title="Voir sur la carte">
+                    <i class="fas fa-map-marked-alt"></i> Voir sur la carte
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for Map -->
+    <div id="map-modal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Localisation de l'espace</h2>
+            <div id="map"></div>
+        </div>
+    </div>
+
+    <!-- JavaScript for Map Integration -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const mapButton = document.getElementById('map-button');
+            const modal = document.getElementById('map-modal');
+            const closeBtn = document.querySelector('.close');
+
+            // Function to initialize the map
+            function initializeMap(lat, lng) {
+                const map = L.map('map').setView([lat, lng], 15); // Set initial coordinates and zoom level
+
+                // Add OpenStreetMap tiles
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+                    maxZoom: 18,
+                }).addTo(map);
+
+                // Add a marker at the specified location
+                L.marker([lat, lng])
+                    .addTo(map)
+                    .bindPopup('Localisation de l\'espace')
+                    .openPopup();
+            }
+
+            // Open the modal when the "Voir sur la carte" button is clicked
+            mapButton.addEventListener('click', async (event) => {
+                event.preventDefault(); // Prevent default link behavior
+
+                const location = "{{ espace.localisation }}"; // Get the location from the template
+
+                try {
+                    // Fetch geolocation data using Nominatim API
+                    const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(location)}`);
+                    const data = await response.json();
+
+                    if (data.length > 0) {
+                        const lat = parseFloat(data[0].lat);
+                        const lon = parseFloat(data[0].lon);
+
+                        // Show the modal
+                        modal.style.display = 'block';
+
+                        // Initialize the map with the fetched coordinates
+                        initializeMap(lat, lon);
+                    } else {
+                        alert('Impossible de trouver les coordonnées pour cette localisation.');
+                    }
+                } catch (error) {
+                    console.error('Error fetching geolocation:', error);
+                    alert('Une erreur est survenue lors de la récupération des coordonnées.');
+                }
+            });
+
+            // Close the modal when the close button is clicked
+            closeBtn.addEventListener('click', () => {
+                modal.style.display = 'none';
+            });
+
+            // Close the modal when clicking outside the modal content
+            window.addEventListener('click', (event) => {
+                if (event.target === modal) {
+                    modal.style.display = 'none';
+                }
+            });
+        });
+    </script>
+{% endblock %}

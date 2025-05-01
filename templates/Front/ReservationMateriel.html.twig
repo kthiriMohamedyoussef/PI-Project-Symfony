@@ -1,0 +1,264 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Eventopia - Matériels{% endblock %}
+
+{% block navbar %}
+	<div style="background-color:white; margin-bottom:95px;">
+		{% include 'Front/navbar.html.twig' %}
+	</div>
+{% endblock %}
+
+{% block body %}
+	<!-- Hero Banner for Materiels -->
+	<div class="container-fluid mt-5 mb-5" style="padding-left:4%; padding-right:4%;">
+		<div style="width: 100%; text-align: center; margin-bottom: 50px;
+	    background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)),
+	    url('https://images.unsplash.com/photo-1478147427282-58a87a120781?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8N3x8ZXZlbnRzfGVufDB8fDB8fHww');
+	    background-size: cover;
+	    background-position: center;
+	    padding: 100px 20px;
+	    border-radius: 8px;
+	    box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+			<h1 style="color: white; font-weight: bold; font-size: 3rem; margin-bottom: 20px;">Discover Available Materials</h1>
+			<p style="color: white; font-size: 1.5rem; margin-bottom: 30px;">
+				Reserve your desired materials for an amazing experience with
+				<span style="color: #ffc107; font-weight: bold;">Eventopia</span>
+			</p>
+		</div>
+	</div>
+
+	<!-- Basket, Favorites, and Reservation Dates Section -->
+	<div class="d-flex justify-content-between align-items-center mb-4" style="padding-right: 8%; padding-left: 8%;">
+		<!-- Cart Icon -->
+		<a href="{{ path('front_gestionmateriel_cart_view', {'eventId': app.request.query.get('eventId')}) }}" 
+           style="text-decoration: none; position: relative; margin-right: 20px;">
+            <i class="fas fa-shopping-cart" style="font-size: 24px; color: #000;"></i>
+            {% if cartCount > 0 %}
+                <span class="cart-count" style="
+                    position: absolute;
+                    top: -10px;
+                    right: -10px;
+                    background: #ff0000;
+                    color: #ffffff;
+                    font-size: 12px;
+                    font-weight: bold;
+                    padding: 5px 7px;
+                    border-radius: 50%;
+                ">{{ cartCount }}</span>
+            {% endif %}
+		</a>
+		
+		<!-- Show Favorites Icon -->
+		<a href="#" id="show-favorites" style="text-decoration: none; position: relative;">
+			<i class="fas fa-heart" style="font-size: 24px; color: #ff0000; cursor: pointer; margin-right: 20px;" title="Show Favorites"></i>
+			<span id="favorite-count" style="
+                position: absolute;
+                top: -10px;
+                right: -10px;
+                background: #ff0000;
+                color: #ffffff;
+                font-size: 12px;
+                font-weight: bold;
+                padding: 5px 7px;
+                border-radius: 50%;
+            ">0</span>
+		</a>
+		
+		<!-- Back to All Materials Button -->
+		<button id="back-to-all" class="btn btn-secondary px-4 py-2" style="display: none; font-weight: 600;">Back to All Materials</button>
+
+		<!-- Reservation Dates Section -->
+		<div class="d-flex align-items-center">
+            <label for="date-start" style="margin-right: 8px; font-weight: bold;">Start Date:</label>
+            <input type="date" id="date-start" class="form-control" style="width: 150px; margin-right: 16px;" 
+                   value="{{ app.session.get('reservation_date_start') }}">
+            <label for="date-end" style="margin-right: 8px; font-weight: bold;">End Date:</label>
+            <input type="date" id="date-end" class="form-control" style="width: 150px;" 
+                   value="{{ app.session.get('reservation_date_end') }}">
+        </div>
+	</div>
+
+	<!-- Material Cards -->
+	<div class="container-fluid mb-5" style="padding-left:8%; padding-right:8%;">
+		<div id="materials-container">
+			{% for materiel in materiels %}
+				<div class="card mb-4 material-card" data-id="{{ materiel.id }}" style="border-radius: 10px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+					<div class="row g-0">
+						<!-- Material Image (Left Side) -->
+						<div class="col-md-5">
+							{% if materiel.imagePath %}
+								<img src="{{ asset(materiel.imagePath) }}" class="img-fluid h-100" style="object-fit: cover; min-height: 300px;" alt="{{ materiel.nom }}">
+							{% else %}
+								<img src="{{ asset('images/default.png') }}" class="img-fluid h-100" style="object-fit: cover; min-height: 300px;" alt="Image not available">
+							{% endif %}
+						</div>
+
+						<!-- Material Content (Right Side) -->
+						<div class="col-md-7">
+							<div class="card-body h-100 d-flex flex-column" style="padding: 2rem;">
+								<h3 class="card-title">{{ materiel.nom }}</h3>
+								<p class="card-text text-muted mb-3">
+									<span style="font-weight: bold;">Type:</span> {{ typeMaterielNames[materiel.typeMaterielId] ?? 'N/A' }}
+								</p>
+
+								<div class="d-flex justify-content-between align-items-center mb-3">
+									<h4 class="mb-0 text-primary">{{ materiel.prix }} TND</h4>
+									<!-- Favorite Icon -->
+									<i class="far fa-heart favorite-icon" data-id="{{ materiel.id }}" style="cursor: pointer; font-size: 24px; color: #ccc;" title="Add to Favorites"></i>
+								</div>
+
+								<div class="mt-auto d-flex justify-content-between align-items-center">
+									<!-- Add to Cart Button with Dates and Event ID -->
+									<a href="#" class="btn btn-primary px-4 py-2 add-to-cart" style="font-weight: 600;" 
+                                       data-id="{{ materiel.id }}"
+                                       data-event-id="{{ app.request.query.get('eventId') }}"
+                                       data-url="{{ path('front_gestionmateriel_cart_add', {'id': materiel.id}) }}">
+                                        Add to Cart
+                                    </a>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			{% else %}
+				<p class="text-center">No available materials at the moment.</p>
+			{% endfor %}
+		</div>
+	</div>
+{% endblock %}
+
+{% block javascripts %}
+	{{ parent() }}
+	<script>
+		document.addEventListener('DOMContentLoaded', function () {
+			const favoriteIcons = document.querySelectorAll('.favorite-icon');
+			const favoriteCountElement = document.getElementById('favorite-count');
+
+			const materialsContainer = document.getElementById('materials-container');
+			const showFavoritesIcon = document.getElementById('show-favorites');
+			const backToAllButton = document.getElementById('back-to-all');
+			const addToCartButtons = document.querySelectorAll('.add-to-cart');
+
+			// Initialize favorite count and favorites array
+			let favorites = JSON.parse(localStorage.getItem('favorites')) || [];
+			favoriteCountElement.textContent = favorites.length; // Set initial count
+
+			// Mark already favorited items
+			favoriteIcons.forEach(icon => {
+				const materialId = icon.dataset.id;
+				if (favorites.includes(materialId)) {
+					icon.classList.remove('far');
+					icon.classList.add('fas');
+					icon.style.color = '#ff0000';
+					icon.title = "Remove from Favorites";
+				}
+			});
+
+			// Handle favorite icon click
+			favoriteIcons.forEach(icon => {
+				icon.addEventListener('click', function () {
+					const materialId = this.dataset.id;
+
+					if (favorites.includes(materialId)) {
+						// Remove from favorites
+						favorites = favorites.filter(id => id !== materialId);
+						this.classList.remove('fas');
+						this.classList.add('far');
+						this.style.color = '#ccc';
+						this.title = "Add to Favorites";
+					} else {
+						// Add to favorites
+						favorites.push(materialId);
+						this.classList.remove('far');
+						this.classList.add('fas');
+						this.style.color = '#ff0000';
+						this.title = "Remove from Favorites";
+					}
+
+					// Update localStorage and favorite count
+					localStorage.setItem('favorites', JSON.stringify(favorites));
+					favoriteCountElement.textContent = favorites.length;
+				});
+			});
+
+			// Show only favorite materials
+			showFavoritesIcon.addEventListener('click', function () {
+				const materialCards = materialsContainer.querySelectorAll('.material-card');
+				let hasFavorites = false;
+				
+				materialCards.forEach(card => {
+					const materialId = card.dataset.id;
+					if (favorites.includes(materialId)) {
+						card.style.display = 'block';
+						hasFavorites = true;
+					} else {
+						card.style.display = 'none';
+					}
+				});
+				
+				if (!hasFavorites) {
+					alert("You don't have any favorite materials yet.");
+					return;
+				}
+				
+				showFavoritesIcon.style.display = 'none';
+				backToAllButton.style.display = 'inline-block';
+			});
+
+			// Back to All Materials
+			backToAllButton.addEventListener('click', function () {
+				const materialCards = materialsContainer.querySelectorAll('.material-card');
+				materialCards.forEach(card => {
+					card.style.display = 'block';
+				});
+				showFavoritesIcon.style.display = 'inline-block';
+				backToAllButton.style.display = 'none';
+			});
+
+			// Handle Add to Cart with Dates and Event ID
+			addToCartButtons.forEach(button => {
+				button.addEventListener('click', function (event) {
+					event.preventDefault();
+
+					const dateStart = document.getElementById('date-start').value;
+					const dateEnd = document.getElementById('date-end').value;
+					const eventId = this.dataset.eventId;
+					const url = this.dataset.url;
+
+					if (!dateStart || !dateEnd) {
+						alert('Please select both start and end dates before adding to the cart.');
+						return;
+					}
+
+					// Build URL with all parameters
+					let redirectUrl = `${url}?dateStart=${dateStart}&dateEnd=${dateEnd}`;
+					if (eventId) {
+						redirectUrl += `&eventId=${eventId}`;
+					}
+
+					window.location.href = redirectUrl;
+				});
+			});
+
+			// Improve date inputs validation
+			const dateStartInput = document.getElementById('date-start');
+			const dateEndInput = document.getElementById('date-end');
+			
+			if (dateStartInput && dateEndInput) {
+				// Set minimum date to today
+				const today = new Date().toISOString().split('T')[0];
+				dateStartInput.min = today;
+				dateEndInput.min = today;
+				
+				// Update end date min when start date changes
+				dateStartInput.addEventListener('change', function() {
+					dateEndInput.min = this.value;
+				});
+			}
+		});
+	</script>
+{% endblock %}
+
+{% block footer %}
+	{% include 'Front/footer.html.twig' %}
+{% endblock %}

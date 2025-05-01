@@ -1,0 +1,909 @@
+{% extends 'Admin/GestionMateriel/admin_base.html.twig' %}
+
+{% block title %}Eventopia | Material List{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #0f4c75;
+            --primary-light: #3282b8;
+            --primary-lighter: #bbe1fa;
+            --light: #f8f9fc;
+            --border: #e0e3e8;
+            --text: #2d3748;
+            --text-light: #718096;
+            --sidebar-width: 280px;
+            --success: #4fd69c;
+            --warning: #ffc107;
+            --danger: #ff6b6b;
+        }
+
+        .admin-content-container {
+            margin-left: 100px;
+            width: calc(100% - 100px);
+            padding: 1.5rem 1.5rem 1.5rem 1.2rem;
+            background: var(--light);
+            min-height: 100vh;
+        }
+
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid var(--primary-lighter);
+        }
+
+        .page-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .page-title i {
+            color: var(--primary-light);
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0 8px;
+            background: transparent;
+        }
+
+        .data-table thead {
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .data-table th {
+            background-color: var(--primary);
+            color: white;
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.8rem;
+            letter-spacing: 0.5px;
+        }
+
+        .data-table th:first-child {
+            border-radius: 8px 0 0 8px;
+        }
+
+        .data-table th:last-child {
+            border-radius: 0 8px 8px 0;
+        }
+
+        .data-table tbody tr {
+            background: white;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .data-table tbody tr:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .data-table td {
+            padding: 15px;
+            vertical-align: middle;
+            position: relative;
+        }
+
+        .data-table td:not(:last-child)::after {
+            content: "";
+            position: absolute;
+            right: 0;
+            top: 15%;
+            height: 70%;
+            width: 1px;
+            background: rgba(0,0,0,0.05);
+        }
+
+        .material-image-thumb {
+            max-width: 100px;
+            max-height: 100px;
+            width: auto;
+            height: auto;
+            object-fit: contain;
+            display: block;
+            margin: 0 auto;
+            border-radius: 8px;
+            border: 2px solid white;
+            box-shadow: 0 4px 12px rgba(15, 76, 117, 0.1);
+        }
+
+        .material-image-thumb:hover {
+            transform: scale(1.1);
+            box-shadow: 0 8px 25px rgba(15, 76, 117, 0.15);
+        }
+
+        .no-image-thumb {
+            width: 100px;
+            height: 100px;
+            background: #f8f9fc;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #718096;
+            font-size: 1.5rem;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .btn-icon {
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+            background: white;
+            color: var(--text-light);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .btn-icon:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        .btn-icon.view {
+            color: var(--primary-light);
+        }
+
+        .btn-icon.view:hover {
+            background: var(--primary-light);
+            color: white;
+        }
+
+        .btn-icon.edit {
+            color: var(--primary-light);
+        }
+
+        .btn-icon.edit:hover {
+            background: var(--primary-light);
+            color: white;
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            font-size: 1rem;
+            border-radius: 8px;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+            border: none;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-light);
+            box-shadow: 0 4px 8px rgba(15, 76, 117, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .status-badge.available {
+            background-color: rgba(79, 214, 156, 0.15);
+            color: var(--success);
+        }
+
+        .status-badge.unavailable {
+            background-color: rgba(255, 107, 107, 0.15);
+            color: var(--danger);
+        }
+
+        .empty-state {
+            background: white;
+            border-radius: 12px;
+            padding: 3rem 2rem;
+            text-align: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            margin-top: 20px;
+        }
+
+        .empty-icon {
+            font-size: 3rem;
+            color: var(--primary-lighter);
+            margin-bottom: 1.5rem;
+        }
+
+        .empty-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 0.75rem;
+        }
+
+        .empty-text {
+            color: var(--text-light);
+            margin-bottom: 1.5rem;
+            max-width: 500px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .empty-action {
+            padding: 10px 20px;
+            background: var(--primary);
+            color: white;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .empty-action:hover {
+            background: var(--primary-light);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(15, 76, 117, 0.2);
+        }
+
+        @media (max-width: 1200px) {
+            .admin-content-container {
+                margin-left: 100px;
+                width: calc(100% - 100px);
+            }
+        }
+
+        @media (max-width: 992px) {
+            .admin-content-container {
+                padding: 1.5rem;
+            }
+
+            .data-table {
+                display: block;
+                overflow-x: auto;
+            }
+
+            .data-table td {
+                min-width: 150px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .action-buttons {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+
+            .btn-icon {
+                width: 30px;
+                height: 30px;
+                font-size: 0.8rem;
+            }
+
+            .empty-state {
+                padding: 2rem 1rem;
+            }
+        }
+
+        #search-bar {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+        }
+         #qrCodeModal img {
+        border: 2px solid var(--primary-light);
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(15, 76, 117, 0.15);
+    }
+        .bg-custom-primary {
+    background-color: #0f4c75 !important;
+    }
+     /* Centered Toast Notification */
+.toast-notification {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%); /* Center the element */
+    z-index: 1050;
+    padding: 30px 40px; /* Increased padding for a bigger notification */
+    background-color: #0f4c75; /* Primary color */
+    color: white; /* White text */
+    border-radius: 15px; /* Slightly larger border radius */
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3); /* Stronger shadow for prominence */
+    font-size: 1.3rem; /* Increased font size for better visibility */
+    font-weight: 700; /* Bolder text */
+    text-align: center;
+    opacity: 0; /* Start hidden */
+    transform: translate(-50%, -60%); /* Slide-in effect */
+    transition: all 0.5s ease-in-out;
+}
+
+.toast-notification.visible {
+    opacity: 1; /* Show notification */
+    transform: translate(-50%, -50%); /* Slide into place */
+}
+
+.toast-notification .close-btn {
+    margin-top: 20px; /* Added space between text and close button */
+    display: inline-block;
+    background: none;
+    border: none;
+    color: white; /* White close icon */
+    font-size: 1.5rem; /* Larger close icon */
+    font-weight: bold;
+    cursor: pointer;
+    transition: color 0.3s ease;
+}
+
+.toast-notification .close-btn:hover {
+    color: #bbe1fa; /* Lighter shade for hover effect */
+}
+    </style>
+{% endblock %}
+
+{% block admin_content %}
+<div id="flash-notifications">
+        {% for label, messages in app.flashes %}
+            {% for message in messages %}
+                <div class="toast-notification alert alert-{{ label }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        {% endfor %}
+    </div>
+<div class="admin-content-container">
+   <div class="page-header d-flex justify-content-between align-items-center">
+    <h1 class="page-title mb-0">
+        <i class="fas fa-list"></i> Material List
+    </h1>
+    <div class="d-flex gap-2">
+    <!-- Add New Material -->
+    <a href="{{ path('admin_gestionmateriel_new') }}" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Add New Material
+        </a>
+    
+    <!-- Export to PDF -->
+    <a href="{{ path('admin_gestionmateriel_pdf') }}" class="btn btn-primary" title="Export to PDF">
+        <i class="fas fa-file-pdf"></i>
+    </a>
+    
+    <!-- View Statistics -->
+    <button onclick="loadStatistics()" class="btn btn-primary" title="View Statistics">
+    <i class="fas fa-chart-pie"></i>
+</button>
+    
+    
+    <a href="{{ path('admin_gestionmateriel_export_excel') }}" class="btn btn-primary" title="Exporter en Excel">
+    <i class="fas fa-file-excel"></i>
+    </a>
+    <!-- Bulk Delete -->
+    <button class="btn btn-danger" onclick="performBulkAction('delete')" title="Delete">
+        <i class="fas fa-trash"></i>
+    </button>
+</div>
+</div>
+
+    <!-- Filters Section -->
+    <div class="filters-container mb-4 p-3" style="border: 1px solid var(--border); border-radius: 8px; background: var(--light); box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);">
+        <h5 class="mb-3" style="color: var(--primary); font-weight: bold;">
+            <i class="fas fa-filter"></i> Filters
+        </h5>
+        <div class="row g-3">
+            <!-- Sort by Alphabet -->
+            <div class="col-md-4">
+                <label for="sort-alphabet" class="form-label text-muted">
+                    <i class="fas fa-sort-alpha-down"></i> Sort by Alphabet:
+                </label>
+                <select id="sort-alphabet" class="form-select" style="border: 1px solid var(--primary-lighter);">
+                    <option value="">Select</option>
+                    <option value="name_asc">A to Z</option>
+                    <option value="name_desc">Z to A</option>
+                </select>
+            </div>
+            <!-- Sort by Price -->
+            <div class="col-md-4">
+                <label for="sort-price" class="form-label text-muted">
+                    <i class="fas fa-dollar-sign"></i> Sort by Price:
+                </label>
+                <select id="sort-price" class="form-select" style="border: 1px solid var(--primary-lighter);">
+                    <option value="">Select</option>
+                    <option value="price_asc">Low to High</option>
+                    <option value="price_desc">High to Low</option>
+                </select>
+            </div>
+            <!-- Filter by Status -->
+            <div class="col-md-4">
+                <label for="filter-status" class="form-label text-muted">
+                    <i class="fas fa-info-circle"></i> Filter by Status:
+                </label>
+                <select id="filter-status" class="form-select" style="border: 1px solid var(--primary-lighter);">
+                    <option value="">All</option>
+                    <option value="DISPONIBLE">DISPONIBLE</option>
+                    <option value="INDISPONIBLE">INDISPONIBLE</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <!-- Search Bar -->
+    <div class="search-bar-container mb-3">
+        <input
+            type="text"
+            id="search-bar"
+            class="form-control"
+            placeholder="Search materials..."
+            style="border: 1px solid var(--primary-lighter);"
+        />
+    </div>
+    <!-- QR Code Modal -->
+<div class="modal fade" id="qrCodeModal" tabindex="-1" aria-labelledby="qrCodeModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="qrCodeModalLabel">Material QR Code</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center">
+                <img id="qrCodeImage" src="" alt="QR Code" style="max-width: 100%; height: auto;">
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+ <div class="modal fade" id="statisticsModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-custom-primary text-white">
+                    <h5 class="modal-title">Material Statistics</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <!-- General Statistics -->
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h6>Total Materials</h6>
+                                    <h3 id="totalMaterials">0</h3>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h6>Disponible</h6>
+                                    <h3 id="availableCount">0</h3>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h6>Indisponible</h6>
+                                    <h3 id="unavailableCount">0</h3>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Chart Section -->
+                    <div class="row chart-container">
+                        <div class="col-md-6">
+                            <canvas id="availabilityChart" width="400" height="200"></canvas>
+                        </div>
+                        <div class="col-md-6">
+                            <canvas id="typeChart" width="400" height="200"></canvas>
+                        </div>
+                    </div>
+
+
+               <div class="bulk-actions-container mb-4">
+    <div class="d-flex gap-3 align-items-center">
+    <div id="notification-container" style="position: fixed; top: 20px; right: 20px; z-index: 1000;"></div>
+    
+
+    </div>
+</div>
+                
+                    <!-- Type Statistics Table -->
+                    <div class="table-responsive mt-4">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Type</th>
+                                    <th>Count</th>
+                                    <th>Percentage</th>
+                                </tr>
+                            </thead>
+                            <tbody id="typeStatsBody">
+                                <!-- Data will be inserted here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+   
+    <!-- Material Table -->
+    <div class="table-responsive">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>
+                        <input type="checkbox" id="select-all" onclick="toggleSelectAll(this)">
+                    </th>
+                    <th>Image</th>
+                    <th>Name</th>
+                    <th>Price</th>
+                    <th>Status</th>
+                    <th>Type</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="material-list">
+                {% for materiel in materiels %}
+                    <tr>
+                        <td>
+                            <input type="checkbox" class="material-checkbox" value="{{ materiel.id }}">
+                        </td>
+                        <td>
+                            {% if materiel.imagePath %}
+                                <img src="{{ asset(materiel.imagePath) }}" alt="{{ materiel.nom }}" class="material-image-thumb"/>
+                            {% else %}
+                                <div class="no-image-thumb">
+                                    <i class="fas fa-image"></i>
+                                </div>
+                            {% endif %}
+                        </td>
+                        <td>{{ materiel.nom }}</td>
+                        <td>{{ materiel.prix }} TND</td>
+                        <td>
+                            <span class="status-badge {{ materiel.etat == 'DISPONIBLE' ? 'available' : 'unavailable' }}">
+                                {{ materiel.etat }}
+                            </span>
+                        </td>
+                        <td>{{ typeMaterielNames[materiel.id] ?? 'N/A' }}</td>
+                        <td>
+                            <div class="action-buttons">
+                                <a href="{{ path('admin_gestionmateriel_show', {'id': materiel.id}) }}" class="btn-icon view" title="View">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                <a href="{{ path('admin_gestionmateriel_edit', {'id': materiel.id}) }}" class="btn-icon edit" title="Edit">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <a href="javascript:void(0);" class="btn-icon qr-code" title="QR Code" onclick="showQrCode({{ materiel.id }})">
+                                    <i class="fas fa-qrcode"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="7" class="text-center py-4">No materials found</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+
+<script>
+    document.getElementById('search-bar').addEventListener('input', function () {
+        updateMaterialList();
+    });
+
+    document.getElementById('sort-alphabet').addEventListener('change', function () {
+        updateMaterialList();
+    });
+
+    document.getElementById('sort-price').addEventListener('change', function () {
+        updateMaterialList();
+    });
+
+    document.getElementById('filter-status').addEventListener('change', function () {
+        updateMaterialList();
+    });
+    document.addEventListener('DOMContentLoaded', function() {
+    // Store modal instance globally
+    window.qrModal = new bootstrap.Modal(document.getElementById('qrCodeModal'));
+        // Clear QR code when modal hides
+        $('#qrCodeModal').on('hidden.bs.modal', function() {
+            document.getElementById('qrCodeImage').src = '';
+        });
+    });
+
+
+    function updateMaterialList() {
+    const query = document.getElementById('search-bar').value;
+    const sortAlphabet = document.getElementById('sort-alphabet').value;
+    const sortPrice = document.getElementById('sort-price').value;
+    const filterStatus = document.getElementById('filter-status').value;
+
+    const sort = sortAlphabet || sortPrice;
+
+    const url = `/admin/gestionmateriel/gestionmateriel/search?q=${encodeURIComponent(query)}&sort=${encodeURIComponent(sort)}&etat=${encodeURIComponent(filterStatus)}`;
+
+    fetch(url)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            const materialList = document.getElementById('material-list');
+            materialList.innerHTML = ''; // Clear the current rows
+
+            if (data.materiels.length > 0) {
+                data.materiels.forEach(materiel => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>
+                            <input type="checkbox" class="material-checkbox" value="${materiel.id}">
+                        </td>
+                        <td>
+                            ${materiel.imagePath
+                                ? `<img src="/${materiel.imagePath}" alt="${materiel.nom}" class="material-image-thumb"/>`
+                                : `<div class="no-image-thumb"><i class="fas fa-image"></i></div>`}
+                        </td>
+                        <td>${materiel.nom}</td>
+                        <td>${materiel.prix} TND</td>
+                        <td>
+                            <span class="status-badge ${materiel.etat === 'DISPONIBLE' ? 'available' : 'unavailable'}">
+                                ${materiel.etat}
+                            </span>
+                        </td>
+                        <td>${materiel.typeMateriel || 'N/A'}</td>
+                        <td>
+                            <div class="action-buttons">
+                                <a href="/admin/gestionmateriel/${materiel.id}" class="btn-icon view" title="View">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                <a href="/admin/gestionmateriel/${materiel.id}/edit" class="btn-icon edit" title="Edit">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <a href="javascript:void(0);" class="btn-icon qr-code" title="QR Code" onclick="showQrCode(${materiel.id})">
+                                    <i class="fas fa-qrcode"></i>
+                                </a>
+                            </div>
+                        </td>
+                    `;
+                    materialList.appendChild(row);
+                });
+            } else {
+                const emptyRow = document.createElement('tr');
+                emptyRow.innerHTML = `<td colspan="7" class="text-center py-4">No materials found</td>`;
+                materialList.appendChild(emptyRow);
+            }
+        })
+        .catch(error => console.error('Error fetching materials:', error));
+            }
+        window.showQrCode = function(materialId) {
+        // Show loading state
+        document.getElementById('qrCodeImage').src = '';
+        
+        fetch(`/admin/gestionmateriel/${materialId}/qr-code`)
+            .then(response => {
+                if (!response.ok) throw new Error('Network error');
+                return response.json();
+            })
+            .then(data => {
+                if (!data.qr_code) throw new Error('Invalid data');
+                document.getElementById('qrCodeImage').src = data.qr_code;
+                window.qrModal.show();
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error: ' + error.message);
+            });
+    };
+    
+    // Clear QR code when modal hides
+    document.getElementById('qrCodeModal').addEventListener('hidden.bs.modal', function() {
+        document.getElementById('qrCodeImage').src = '';
+    });
+   let materialAvailabilityChart = null;
+    let materialTypeChart = null;
+
+    function loadStatistics() {
+    const modal = new bootstrap.Modal(document.getElementById('statisticsModal'));
+    modal.show();
+
+    fetch("{{ path('admin_gestionmateriel_statistics') }}")
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (!data || !data.availability || !data.by_type) {
+                throw new Error("Invalid data format received");
+            }
+
+            // Update basic stats
+            document.getElementById('totalMaterials').textContent = data.total;
+            document.getElementById('availableCount').textContent = 
+                `${data.availability.disponible.count} (${data.availability.disponible.percentage}%)`;
+            document.getElementById('unavailableCount').textContent = 
+                `${data.availability.indisponible.count} (${data.availability.indisponible.percentage}%)`;
+
+            // Update availability chart
+            const ctxAvailability = document.getElementById('availabilityChart').getContext('2d');
+            if (materialAvailabilityChart) materialAvailabilityChart.destroy();
+            materialAvailabilityChart = new Chart(ctxAvailability, {
+                type: 'pie',
+                data: {
+                    labels: ['Disponible', 'Indisponible'],
+                    datasets: [{
+                        data: [
+                            data.availability.disponible.percentage,
+                            data.availability.indisponible.percentage
+                        ],
+                        backgroundColor: ['#4CAF50', '#FF5252']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'top'
+                        }
+                    }
+                }
+            });
+
+            // Update type statistics chart
+            const typeLabels = data.by_type.map(type => type.type);
+            const typeCounts = data.by_type.map(type => type.count);
+            const ctxType = document.getElementById('typeChart').getContext('2d');
+            if (materialTypeChart) materialTypeChart.destroy();
+            materialTypeChart = new Chart(ctxType, {
+                type: 'bar',
+                data: {
+                    labels: typeLabels,
+                    datasets: [{
+                        label: 'Materials by Type',
+                        data: typeCounts,
+                        backgroundColor: '#00B4D8'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    }
+                }
+            });
+
+            // Update type statistics table
+            let tableHtml = '';
+            data.by_type.forEach(type => {
+                tableHtml += `
+                <tr>
+                    <td>${type.type}</td>
+                    <td>${type.count}</td>
+                    <td>${type.percentage}%</td>
+                </tr>`;
+            });
+            document.getElementById('typeStatsBody').innerHTML = tableHtml;
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            document.getElementById('typeStatsBody').innerHTML = `
+                <tr>
+                    <td colspan="3" class="text-danger">Error loading statistics: ${error.message}</td>
+                </tr>`;
+        });
+    }
+ // Toggle all checkboxes when "Select All" is clicked
+    function toggleSelectAll(selectAllCheckbox) {
+    const checkboxes = document.querySelectorAll('.material-checkbox');
+    checkboxes.forEach(checkbox => checkbox.checked = selectAllCheckbox.checked);
+    }
+
+    function performBulkAction(action) {
+    const selectedAction = action || document.getElementById('bulk-action').value;
+    const selectedMaterials = Array.from(document.querySelectorAll('.material-checkbox:checked'))
+        .map(checkbox => checkbox.value);
+
+    if (!selectedAction) {
+        alert('Please select a bulk action.');
+        return;
+    }
+
+    if (selectedMaterials.length === 0) {
+        alert('Please select at least one material.');
+        return;
+    }
+
+    const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+    if (!csrfToken) {
+        console.error('CSRF token meta tag not found.');
+        alert('An error occurred: CSRF token is missing.');
+        return;
+    }
+
+    const bulkActionUrl = "{{ path('admin_gestionmateriel_bulk_action') }}";
+
+    fetch(bulkActionUrl, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-Token': csrfToken
+        },
+        body: JSON.stringify({
+            action: selectedAction,
+            materials: selectedMaterials
+        })
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();
+    })
+    .then(data => {
+        if (data.success) {
+            // Instead of showing an alert, reload the page or show a success message in a notification area
+            console.log('Bulk action successfully applied.');
+            location.reload(); // Reload the page to reflect the changes
+        } else {
+            alert(`Error: ${data.message}`);
+        }
+    })
+    .catch(error => {
+        console.error('Error performing bulk action:', error);
+        alert('An error occurred while performing the bulk action.');
+    });
+    }
+ document.addEventListener('DOMContentLoaded', function () {
+        const notifications = document.querySelectorAll('.toast-notification');
+
+        // Show all notifications on page load
+        notifications.forEach(notification => {
+            notification.classList.add('visible');
+            setTimeout(() => {
+                notification.classList.remove('visible');
+                setTimeout(() => notification.remove(), 500); // Remove after slide-out effect
+            }, 5000);
+        });
+    });
+</script>
+{% endblock %}

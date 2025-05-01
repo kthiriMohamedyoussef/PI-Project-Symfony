@@ -1,0 +1,314 @@
+{% extends 'Admin/GestionMateriel/admin_base.html.twig' %}
+
+{% block title %}Eventopia | Modifier Type de Matériel{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #0f4c75;
+            --primary-light: rgba(15, 76, 117, 0.1);
+            --secondary: #3282b8;
+            --accent: #00B4D8;
+            --accent-light: rgba(0, 180, 216, 0.2);
+            --light: #F8F9FF;
+            --dark: #1E1E2C;
+            --success: #4FD69C;
+            --error: #FF6B6B;
+            --radius: 8px;
+            --radius-lg: 12px;
+            --shadow: 0 4px 12px rgba(15, 76, 117, 0.1);
+            --sidebar-width: 280px;
+        }
+
+        html, body, .admin-wrapper, .admin-main {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+        }
+
+        .admin-main {
+            margin-left: var(--sidebar-width);
+            background: #f5f9fc;
+            display: flex;
+        }
+
+        .form-container {
+            flex: 1;
+            padding: 2rem;
+            display: flex;
+            overflow: hidden;
+        }
+
+        .form-card {
+            background: white;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow);
+            padding: 2.5rem;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            border-top: 4px solid var(--primary);
+        }
+
+        .admin-header {
+            text-align: left;
+            margin-bottom: 2rem;
+            position: relative;
+            padding-bottom: 1rem;
+        }
+
+        .admin-header::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 60px;
+            height: 4px;
+            background: linear-gradient(to right, var(--primary), var(--accent));
+            border-radius: 2px;
+        }
+
+        .admin-title {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin: 0 0 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .admin-title i {
+            color: var(--accent);
+            font-size: 1.8rem;
+        }
+
+        .admin-subtitle {
+            color: #6B7280;
+            font-size: 1.05rem;
+            margin: 0;
+            font-weight: 400;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: var(--primary);
+            font-size: 0.95rem;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 0.85rem 1.25rem;
+            font-size: 1rem;
+            border: 1px solid #d1d5db;
+            border-radius: var(--radius);
+            transition: all 0.3s ease;
+            background-color: #f9fafb;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--accent-light);
+        }
+
+        textarea.form-control {
+            min-height: 180px;
+            resize: vertical;
+        }
+
+        .two-col {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 1rem;
+            margin-top: 2rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid #e5e7eb;
+        }
+
+        .btn {
+            padding: 0.9rem 1.75rem;
+            font-size: 1rem;
+            border-radius: var(--radius);
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.75rem;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .btn-submit {
+            background: var(--primary);
+            color: white;
+            border: none;
+        }
+
+        .btn-submit:hover {
+            background: var(--secondary);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow);
+        }
+
+        .btn-return {
+            background: white;
+            color: var(--primary);
+            border: 1px solid #d1d5db;
+            text-decoration: none;
+        }
+
+        .btn-return:hover {
+            background: #f9fafb;
+            border-color: var(--accent);
+            color: var(--secondary);
+        }
+
+         .is-invalid {
+            border-color: var(--danger) !important;
+            box-shadow: 0 0 0 0.2rem rgba(255, 107, 107, 0.25);
+        }
+        
+        .invalid-feedback {
+            color: var(--danger);
+            font-size: 0.875em;
+            margin-top: 0.25rem;
+        }
+        .btn-delete {
+            background: var(--danger);
+            color: white;
+            border: none;
+        }
+
+        .btn-delete:hover {
+            background: #e05555;
+            transform: translateY(-2px);
+            box-shadow: var(--shadow);
+        }
+    </style>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Bootstrap 5 form validation
+            const forms = document.querySelectorAll('.needs-validation');
+            
+            Array.from(forms).forEach(function(form) {
+                // Add event listener for submit
+                form.addEventListener('submit', function(e) {
+                    // Prevent submission if invalid
+                    if (!form.checkValidity()) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                    }
+                    
+                    // Add validation class
+                    form.classList.add('was-validated');
+                    
+                    // Manually show Symfony validation errors
+                    const invalidFields = form.querySelectorAll('.is-invalid');
+                    invalidFields.forEach(function(field) {
+                        field.nextElementSibling?.classList.add('d-block');
+                    });
+                }, false);
+                
+                // Add real-time validation on blur
+                form.querySelectorAll('.form-control').forEach(function(input) {
+                    input.addEventListener('blur', function() {
+                        if (form.classList.contains('was-validated')) {
+                            this.classList.toggle('is-invalid', !this.checkValidity());
+                            const errorDiv = this.nextElementSibling;
+                            if (errorDiv && errorDiv.classList.contains('invalid-feedback')) {
+                                errorDiv.classList.toggle('d-block', !this.checkValidity());
+                            }
+                        }
+                    });
+                });
+            });
+        });
+    </script>
+{% endblock %}
+{% block admin_content %}
+    <div class="form-container">
+        <div class="form-card">
+            <div class="admin-header">
+                <h1 class="admin-title"><i class="fas fa-edit"></i> Edit Material</h1>
+                <p class="admin-subtitle">Update the details of the selected material</p>
+            </div>
+            
+            {{ form_start(form, {'attr': {'novalidate': 'novalidate'}}) }}
+            
+                <div class="two-col">
+                    <!-- Champ Nom -->
+                    <div class="form-group">
+                        {{ form_label(form.nomm, 'Nom du type de matériel') }}
+                        {{ form_widget(form.nomm, {
+                            'attr': {
+                                'class': 'form-control' ~ (form.nomm.vars.errors|length ? ' is-invalid' : ''),
+                                'placeholder': 'Entrez le nom du type de matériel',
+                            }
+                        }) }}
+                        {% if form.nomm.vars.errors|length %}
+                            <div class="invalid-feedback">
+                                {% for error in form.nomm.vars.errors %}
+                                    {{ error.message }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    <!-- Champ Description -->
+                    <div class="form-group">
+                        {{ form_label(form.description, 'Description') }}
+                        {{ form_widget(form.description, {
+                            'attr': {
+                                'class': 'form-control' ~ (form.description.vars.errors|length ? ' is-invalid' : ''),
+                                'placeholder': 'Entrez la description du type de matériel',
+                                'rows': 5
+                            }
+                        }) }}
+                        {% if form.description.vars.errors|length %}
+                            <div class="invalid-feedback">
+                                {% for error in form.description.vars.errors %}
+                                    {{ error.message }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-submit">
+                        <i class="fas fa-save"></i> save modifications
+                    </button>
+                    <button type="button" class="btn btn-delete" onclick="confirmDelete()">
+                            <i class="fas fa-trash"></i> Delete
+                        </button>
+                    <a href="{{ path('app_type_materiel_index') }}" class="btn btn-return">
+                        <i class="fas fa-arrow-left"></i> back to list
+                    </a>
+                </div>
+            
+            {{ form_end(form) }}
+            <form id="delete-form" method="post" action="{{ path('admin_gestionmateriel_type_materiel_delete', {'id': type_materiel.id}) }}" style="display: none;">
+                <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ type_materiel.id) }}">
+            </form>
+        </div>
+    </div>
+{% endblock %}

@@ -1,0 +1,134 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Eventopia - Cart{% endblock %}
+
+{% block navbar %}
+    {% if not forInvoice %}
+        <div style="background-color:white; margin-bottom:95px;">
+            {% include 'Front/navbar.html.twig' %}
+        </div>
+    {% endif %}
+{% endblock %}
+
+{% block body %}
+    {% if not forInvoice %}
+        <!-- Normal Cart View -->
+        <div class="container-fluid mt-5 mb-5" style="padding-left:4%; padding-right:4%;">
+            <div style="width: 100%; text-align: center; margin-bottom: 50px;
+                background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)),
+                url('https://images.unsplash.com/photo-1478147427282-58a87a120781?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8N3x8ZXZlbnRzfGVufDB8fDB8fHww');
+                background-size: cover;
+                background-position: center;
+                padding: 100px 20px;
+                border-radius: 8px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+                <h1 style="color: white; font-weight: bold; font-size: 3rem; margin-bottom: 20px;">Your Cart</h1>
+                <p style="color: white; font-size: 1.5rem; margin-bottom: 30px;">
+                    Review your selected materials and proceed to reserve them with
+                    <span style="color: #ffc107; font-weight: bold;">Eventopia</span>
+                </p>
+            </div>
+        </div>
+
+        <div class="container-fluid mb-5" style="padding-left:8%; padding-right:8%;">
+            {% if cart is empty %}
+                <p class="text-center">Your cart is currently empty.</p>
+                <a href="{{ path('front_gestionmateriel_reservation_materiel_index') }}" class="btn btn-primary px-5 py-2" style="font-weight: 600; font-size: 1.2rem;">back to list </a>
+            {% else %}
+                {% set totalPrice = 0 %}
+                {% for item in cart %}
+                    <!-- Cart Item -->
+                    <div class="card mb-4" style="border-radius: 10px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+                        <div class="row g-0">
+                            <div class="col-md-5">
+                                {% if item.material.imagePath %}
+                                    <img src="{{ asset(item.material.imagePath) }}" class="img-fluid h-100" style="object-fit: cover; min-height: 300px;" alt="{{ item.material.nom }}">
+                                {% else %}
+                                    <img src="{{ asset('images/default.png') }}" class="img-fluid h-100" style="object-fit: cover; min-height: 300px;" alt="Image not available">
+                                {% endif %}
+                            </div>
+                            <div class="col-md-7">
+                                <div class="card-body h-100 d-flex flex-column" style="padding: 2rem;">
+                                    <h3 class="card-title">{{ item.material.nom }}</h3>
+                                    <p class="card-text text-muted mb-3">
+                                        <span style="font-weight: bold;">Type:</span> {{ typeMaterielNames[item.material.typeMaterielId] ?? 'N/A' }}
+                                    </p>
+                                    <p class="card-text text-muted mb-3">
+                                        <span style="font-weight: bold;">Quantity:</span> 
+                                        <input type="number" name="quantity" value="{{ item.quantity }}" min="1" class="form-control quantity-input" data-price="{{ item.material.prix }}" style="width: 80px; display: inline-block;">
+                                    </p>
+                                    <p class="card-text text-muted mb-3">
+                                        <span style="font-weight: bold;">Reservation Start:</span> {{ item.dateStart|date('Y-m-d') }}
+                                    </p>
+                                    <p class="card-text text-muted mb-3">
+                                        <span style="font-weight: bold;">Reservation End:</span> {{ item.dateEnd|date('Y-m-d') }}
+                                    </p>
+                                    <div class="mt-auto d-flex justify-content-between align-items-center">
+                                        <h4 class="mb-0 text-primary total-price">{{ item.material.prix * item.quantity }} TND</h4>
+                                        <a href="{{ path('front_gestionmateriel_cart_remove', {'id': item.material.id}) }}" 
+                                           class="btn btn-danger px-4 py-2"
+                                           style="font-weight: 600;"
+                                           onclick="return confirm('Are you sure you want to remove this item from the cart?');">
+                                            Remove
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% set totalPrice = totalPrice + (item.material.prix * item.quantity) %}
+                {% endfor %}
+                <div class="text-end" style="padding-right: 8%;">
+                    <h4 style="font-weight: bold;">Total Price: <span class="text-primary">{{ totalPrice }} TND</span></h4>
+                </div>
+                <div class="text-center mt-4">
+                    <a href="{{ path('front_gestionmateriel_cart_submit', {'eventId': app.request.query.get('eventId')}) }}" 
+   class="btn btn-success px-5 py-2" 
+   style="font-weight: 600; font-size: 1.2rem;">
+   Submit
+</a>
+                    <a href="{{ path('front_gestionmateriel_cart_invoice') }}" class="btn btn-primary px-5 py-2" style="font-weight: 600; font-size: 1.2rem;">(PDF)</a>
+                    <a href="{{ path('front_gestionmateriel_reservation_materiel_index') }}" class="btn btn-primary px-5 py-2" style="font-weight: 600; font-size: 1.2rem;">back to list </a>
+                </div>
+            {% endif %}
+        </div>
+    {% else %}
+        <!-- Invoice Section -->
+         <div class="invoice-header" style="text-align: center; margin-bottom: 30px;">
+        <h1 style="font-size: 2.5rem; font-weight: bold;">FACTURE</h1>
+    </div>
+    <div class="invoice-meta" style="margin-bottom: 30px; text-align: center;">
+        <p style="font-size: 1.2rem; font-weight: bold;">Facture N°: {{ invoiceNumber }}</p>
+        <p style="font-size: 1.2rem;">Date: {{ invoiceDate }}</p>
+    </div>
+    <div class="invoice-details">
+        <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+            <thead>
+                <tr>
+                    <th>DESCRIPTION</th>
+                    <th>QUANTITÉ</th>
+                    <th>PRIX (TND)</th>
+                    <th>MONTANT (TND)</th>
+                    <th>RÉSERVATION DÉBUT</th>
+                    <th>RÉSERVATION FIN</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in cart %}
+                    <tr>
+                        <td>{{ item.material.nom }}</td>
+                        <td>{{ item.quantity }}</td>
+                        <td>{{ item.material.prix }}</td>
+                        <td>{{ item.material.prix * item.quantity }}</td>
+                        <td>{{ item.dateStart|date('Y-m-d') }}</td>
+                        <td>{{ item.dateEnd|date('Y-m-d') }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <div class="text-end" style="margin-top: 20px;">
+        <strong>Total à Payer (TND):</strong> {{ totalPrice }}
+    </div>
+{% endif %}
+{% endblock %}

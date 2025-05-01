@@ -11,11 +11,17 @@
         "doctrine/doctrine-bundle": "^2.14",
         "doctrine/doctrine-migrations-bundle": "^3.4",
         "doctrine/orm": "^3.3",
+        "dompdf/dompdf": "^3.1",
+        "endroid/qr-code": "^6.0",
+        "endroid/qr-code-bundle": "^6.0",
         "phpdocumentor/reflection-docblock": "^5.6",
+        "phpoffice/phpspreadsheet": "^4.2",
         "phpstan/phpdoc-parser": "^2.1",
+        "stripe/stripe-php": "^17.2",
         "symfony/asset": "7.2.*",
         "symfony/asset-mapper": "7.2.*",
         "symfony/console": "7.2.*",
+        "symfony/dependency-injection": "7.2.*",
         "symfony/doctrine-messenger": "7.2.*",
         "symfony/dotenv": "7.2.*",
         "symfony/expression-language": "7.2.*",
@@ -23,6 +29,7 @@
         "symfony/form": "7.2.*",
         "symfony/framework-bundle": "7.2.*",
         "symfony/http-client": "7.2.*",
+        "symfony/http-foundation": "7.2.*",
         "symfony/intl": "7.2.*",
         "symfony/mailer": "7.2.*",
         "symfony/mime": "7.2.*",
@@ -42,14 +49,18 @@
         "symfony/validator": "7.2.*",
         "symfony/web-link": "7.2.*",
         "symfony/yaml": "7.2.*",
+        "tecnickcom/tcpdf": "^6.9",
         "twig/extra-bundle": "^2.12|^3.0",
-        "twig/twig": "^2.12|^3.0"
+        "twig/string-extra": "^3.20",
+        "twig/twig": "^2.12|^3.0",
+        "victor-prdh/recaptcha-bundle": "^2.0"
     },
     "config": {
         "allow-plugins": {
             "php-http/discovery": true,
             "symfony/flex": true,
-            "symfony/runtime": true
+            "symfony/runtime": true,
+            "endroid/installer": true
         },
         "bump-after-update": true,
         "sort-packages": true
@@ -101,7 +112,7 @@
         "symfony/browser-kit": "7.2.*",
         "symfony/css-selector": "7.2.*",
         "symfony/debug-bundle": "7.2.*",
-        "symfony/maker-bundle": "^1.0",
+        "symfony/maker-bundle": "^1.62",
         "symfony/phpunit-bridge": "^7.2",
         "symfony/stopwatch": "7.2.*",
         "symfony/web-profiler-bundle": "7.2.*"
