@@ -1,0 +1,262 @@
+{# templates/Admin/Gestionevenement/calendar.html.twig #}
+{% extends 'Admin/Gestionevenement/admin_base.html.twig' %}
+
+{% block title %}Eventopia | Calendrier des Événements{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .calendar-container {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            margin-top: 20px;
+            position: relative;
+        }
+        
+        /* Updated header to match other pages */
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid #bbe1fa;
+        }
+        
+        .page-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #0f4c75;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        
+        .page-title i {
+            color: #3282b8;
+        }
+        
+        /* Updated buttons to match sidebar */
+        .btn {
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .btn-primary {
+            background-color: #0f4c75;
+            border-color: #0f4c75;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background-color: #3282b8;
+            border-color: #3282b8;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(15, 76, 117, 0.2);
+        }
+        
+        .btn-outline-primary {
+            background-color: transparent;
+            border-color: #0f4c75;
+            color: #0f4c75;
+        }
+        
+        .btn-outline-primary:hover {
+            background-color: #0f4c75;
+            color: white;
+        }
+        
+        /* Calendar styling updates */
+        .fc-toolbar-title {
+            font-size: 1.25rem;
+            color: #0f4c75;
+            font-weight: 600;
+        }
+        
+        .fc-button {
+            background-color: #0f4c75 !important;
+            border-color: #0f4c75 !important;
+            color: white !important;
+            transition: all 0.2s ease;
+        }
+        
+        .fc-button:hover {
+            background-color: #3282b8 !important;
+            border-color: #3282b8 !important;
+            opacity: 1;
+            transform: translateY(-1px);
+        }
+        
+        .fc-button:active {
+            transform: translateY(0);
+        }
+        
+        .fc-button-primary:not(:disabled).fc-button-active {
+            background-color: #3282b8 !important;
+            border-color: #3282b8 !important;
+        }
+        
+        /* Calendar header cells */
+        .fc-col-header-cell {
+            background-color: #0f4c75;
+            color: white;
+        }
+        
+        .fc-event {
+            cursor: pointer;
+            font-size: 0.85em;
+            padding: 3px 6px;
+            border: none;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            transition: all 0.2s ease;
+            border-left: 4px solid transparent !important;
+        }
+        
+        .fc-event:hover {
+            box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+            transform: translateY(-1px);
+        }
+        
+        .fc-daygrid-event-dot {
+            display: none;
+        }
+        
+        #calendar-loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 10;
+            display: none;
+        }
+        
+        .fc-daygrid-day-frame {
+            background: rgba(255,255,255,0.7);
+        }
+        
+        .fc-day-today {
+            background: rgba(15, 76, 117, 0.1) !important;
+        }
+        
+        /* Status colors matching your other pages */
+        .fc-event-status-active {
+            background-color: rgba(79, 214, 156, 0.15) !important;
+            border-left-color: #4fd69c !important;
+            color: #4fd69c;
+        }
+        
+        .fc-event-status-inactive {
+            background-color: rgba(255, 107, 107, 0.15) !important;
+            border-left-color: #ff6b6b !important;
+            color: #ff6b6b;
+        }
+        
+        .fc-event-status-pending {
+            background-color: rgba(255, 193, 7, 0.15) !important;
+            border-left-color: #ffc107 !important;
+            color: #ffc107;
+        }
+    </style>
+{% endblock %}
+
+{% block admin_content %}
+<div class="admin-content-container">
+    <div class="page-header">
+        <h1 class="page-title">
+            <i class="fas fa-calendar-alt"></i> Calendrier des Événements
+        </h1>
+        <div>
+            <a href="{{ path('admin_evenement_liste') }}" class="btn btn-outline-primary me-2">
+                <i class="fas fa-list me-1"></i> Vue Liste
+            </a>
+            <a href="{{ path('admin_evenement_ajouter') }}" class="btn btn-primary">
+                <i class="fas fa-plus me-1"></i> Nouvel Événement
+            </a>
+        </div>
+    </div>
+
+    <div class="calendar-container">
+        <div id="calendar-loading" class="spinner-border text-primary"></div>
+        <div id="calendar"></div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const calendarEl = document.getElementById('calendar');
+            const loadingEl = document.getElementById('calendar-loading');
+            
+            const calendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: 'dayGridMonth',
+                locale: 'fr',
+                firstDay: 1,
+                headerToolbar: {
+                    left: 'prev,next today',
+                    center: 'title',
+                    right: 'dayGridMonth,timeGridWeek,timeGridDay'
+                },
+                views: {
+                    dayGridMonth: {
+                        dayMaxEventRows: 3,
+                    }
+                },
+                events: {
+                    url: '{{ path('admin_api_evenements') }}',
+                    method: 'GET',
+                    extraParams: {
+                        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone
+                    },
+                    failure: function(error) {
+                        console.error('Calendar error:', error);
+                        alert('Erreur lors du chargement des événements. Veuillez actualiser la page.');
+                    }
+                },
+                loading: function(isLoading) {
+                    loadingEl.style.display = isLoading ? 'block' : 'none';
+                },
+                eventClick: function(info) {
+                    info.jsEvent.preventDefault();
+                    window.location.href = info.event.url;
+                },
+                eventDisplay: 'block',
+                eventTimeFormat: { 
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    hour12: false
+                },
+                eventContent: function(arg) {
+                    return {
+                        html: `<div class="fc-event-title">${arg.event.title}</div>`
+                    };
+                },
+                eventDidMount: function(arg) {
+                    // Add status class for color coding
+                    if (arg.event.extendedProps.statut) {
+                        arg.el.classList.add(`fc-event-status-${arg.event.extendedProps.statut}`);
+                    }
+                },
+                dayHeaderContent: function(arg) {
+                    const dayNames = ['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam'];
+                    return dayNames[arg.date.getDay()];
+                }
+            });
+            
+            calendar.render();
+            
+            window.addEventListener('resize', function() {
+                calendar.updateSize();
+            });
+        });
+    </script>
+{% endblock %}

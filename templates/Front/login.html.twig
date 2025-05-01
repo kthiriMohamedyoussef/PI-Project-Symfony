@@ -1,0 +1,409 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Login | Eventopia{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #03045F;
+            --primary-light: #1A1A8F;
+            --primary-dark: #02034A;
+            --accent: #FF6B6B;
+            --light: #f8fafc;
+            --dark: #1e293b;
+            --success: #10b981;
+            --error: #ef4444;
+            --radius: 12px;
+            --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background: white;
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            min-height: 100vh;
+            color: var(--dark);
+            line-height: 1.5;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+        }
+
+        /* Navbar - Left aligned */
+        .navbar {
+            width: 100%;
+            background-color: white;
+            padding: 1.25rem 2rem;
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 1000;
+            display: flex;
+            justify-content: flex-start;
+            align-items: center;
+            border-bottom: 1px solid #f1f1f1;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .navbar-brand {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+        }
+
+        .navbar-brand i {
+            margin-right: 0.75rem;
+            color: var(--accent);
+        }
+
+        .login-container {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 7rem 1.5rem 2rem;
+            min-height: 100vh;
+        }
+
+        .login-card {
+            width: 100%;
+            max-width: 480px;
+            background: white;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: 2.5rem;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            transform: translateY(20px);
+            opacity: 0;
+            animation: fadeInUp 0.6s 0.2s forwards;
+        }
+
+        @keyframes fadeInUp {
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        /* Animated Event Icons - Behind content */
+        .event-icons {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            pointer-events: none;
+            overflow: hidden;
+            z-index: 1;
+        }
+
+        .event-icon {
+            position: absolute;
+            color: rgba(3, 4, 95, 0.1);
+            font-size: 1.75rem;
+            opacity: 0;
+            animation: floatIn 8s infinite ease-in-out;
+        }
+
+        @keyframes floatIn {
+            0% {
+                transform: translateY(20px) rotate(0deg);
+                opacity: 0;
+            }
+            20% {
+                opacity: 0.15;
+            }
+            50% {
+                transform: translateY(-10px) rotate(5deg);
+            }
+            80% {
+                opacity: 0.15;
+            }
+            100% {
+                transform: translateY(20px) rotate(0deg);
+                opacity: 0;
+            }
+        }
+
+        /* Content container - Above everything */
+        .card-content {
+            position: relative;
+            z-index: 2;
+            background: white;
+            padding: 1.5rem;
+            border-radius: var(--radius);
+        }
+
+        .login-header {
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .login-title {
+            font-size: 1.75rem;
+            font-weight: 700;
+            margin-bottom: 0.75rem;
+            color: var(--primary);
+            position: relative;
+            display: inline-block;
+        }
+
+        .login-title::after {
+            content: '';
+            position: absolute;
+            bottom: -8px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 50px;
+            height: 3px;
+            background: var(--accent);
+            border-radius: 3px;
+        }
+
+        .login-subtitle {
+            color: #64748b;
+            font-size: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+            position: relative;
+            transform: translateY(10px);
+            opacity: 0;
+            animation: fadeInUp 0.5s 0.4s forwards;
+        }
+
+        .form-group:nth-child(2) {
+            animation-delay: 0.5s;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: var(--dark);
+            font-size: 0.95rem;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 0.9rem 1.2rem;
+            font-size: 1rem;
+            border: 1px solid #e2e8f0;
+            border-radius: var(--radius);
+            transition: var(--transition);
+            background-color: #f8fafc;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(3, 4, 95, 0.1);
+            background: white;
+        }
+
+        .password-wrapper {
+            position: relative;
+        }
+
+        .toggle-password {
+            position: absolute;
+            right: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            color: #94a3b8;
+        }
+
+        .forgot-password {
+            display: block;
+            text-align: right;
+            margin-top: 0.5rem;
+            font-size: 0.85rem;
+        }
+
+        .forgot-password a {
+            color: var(--primary);
+            text-decoration: none;
+        }
+
+        .btn-login {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 1rem;
+            font-size: 1.1rem;
+            border-radius: var(--radius);
+            width: 100%;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 1rem;
+            position: relative;
+            transform: translateY(10px);
+            opacity: 0;
+            animation: fadeInUp 0.5s 0.6s forwards;
+        }
+
+        .signup-link {
+            text-align: center;
+            margin-top: 2rem;
+            color: #64748b;
+            font-size: 0.95rem;
+            transform: translateY(10px);
+            opacity: 0;
+            animation: fadeInUp 0.5s 0.7s forwards;
+        }
+
+        .signup-link a {
+            color: var(--primary);
+            font-weight: 500;
+            text-decoration: none;
+        }
+
+        /* Event icon positions and animations */
+        .event-icon:nth-child(1) {
+            top: 10%;
+            left: 10%;
+            animation: floatIn 8s infinite;
+        }
+        .event-icon:nth-child(2) {
+            top: 75%;
+            left: 15%;
+            animation: floatIn 9s 1s infinite;
+        }
+        .event-icon:nth-child(3) {
+            top: 30%;
+            left: 85%;
+            animation: floatIn 10s 2s infinite;
+        }
+        .event-icon:nth-child(4) {
+            top: 80%;
+            left: 80%;
+            animation: floatIn 9s 1.5s infinite;
+        }
+        .event-icon:nth-child(5) {
+            top: 15%;
+            left: 70%;
+            animation: floatIn 8s 0.5s infinite;
+        }
+        .event-icon:nth-child(6) {
+            top: 60%;
+            left: 5%;
+            animation: floatIn 10s 2.5s infinite;
+        }
+
+        @media (max-width: 768px) {
+            .navbar {
+                padding: 1rem 1.5rem;
+            }
+            
+            .navbar-brand {
+                font-size: 1.3rem;
+            }
+            
+            .login-container {
+                padding: 6rem 1.5rem 2rem;
+            }
+            
+            .login-card {
+                padding: 2rem;
+            }
+            
+            .event-icon {
+                font-size: 1.5rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .login-card {
+                border: none;
+                box-shadow: none;
+            }
+            
+            .event-icons {
+                display: none;
+            }
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+<nav class="navbar">
+    <a href="#" class="navbar-brand">
+        <img src="{{ asset('images/eventopiaa.png') }}" alt="Eventopia Logo" class="logo-img" height="40px"> Eventopia
+    </a>
+</nav>
+
+<div class="login-container">
+    <div class="login-card">
+        <div class="event-icons">
+            <i class="fas fa-calendar-alt event-icon"></i>
+            <i class="fas fa-glass-cheers event-icon"></i>
+            <i class="fas fa-microphone event-icon"></i>
+            <i class="fas fa-music event-icon"></i>
+            <i class="fas fa-camera event-icon"></i>
+            <i class="fas fa-ticket-alt event-icon"></i>
+        </div>
+
+        <div class="card-content">
+            <div class="login-header">
+                <h2 class="login-title">Welcome Back</h2>
+                <p class="login-subtitle">We're so excited to see you again!</p>
+            </div>
+            {{ form_start(form, {'attr': {'novalidate': 'novalidate', 'data-turbo': 'false'}}) }}
+                <div class="form-group">
+                    {{ form_label(form.email, 'Email') }}
+                    {{ form_widget(form.email, {'attr': {'class': 'form-control', 'placeholder': 'your@email.com'}}) }}
+                    {{form_errors(form.email)}}
+                </div>
+
+                <div class="form-group password-wrapper">
+                    {{ form_label(form.motdepasse, 'Password') }}
+                    {{ form_widget(form.motdepasse, {'attr': {'class': 'form-control', 'placeholder': '••••••••'}}) }}
+                    {{form_errors(form.motdepasse)}}
+                    <i class="fas fa-eye toggle-password"></i>
+                    <span class="forgot-password">
+                        <a href="#">Forgot password?</a>
+                    </span>
+                </div>
+
+                <button type="submit" class="btn-login">
+                    Login
+                </button>
+            {{ form_end(form) }}
+
+            <div class="signup-link">
+                Don't have an account? <a href="{{ path('app_signup') }}">Sign Up</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Toggle password visibility
+        document.querySelector('.toggle-password').addEventListener('click', function() {
+            const passwordInput = document.querySelector('#{{ form.motdepasse.vars.id }}');
+            const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+            passwordInput.setAttribute('type', type);
+            this.classList.toggle('fa-eye');
+            this.classList.toggle('fa-eye-slash');
+        });
+    });
+</script>
+{% endblock %}

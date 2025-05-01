@@ -1,0 +1,496 @@
+{% extends 'Admin/GestionMateriel/admin_base.html.twig' %}
+
+{% block title %}Eventopia | New Material{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #0f4c75;
+            --primary-light: rgba(15, 76, 117, 0.1);
+            --secondary: #3282b8;
+            --accent: #00B4D8;
+            --accent-light: rgba(0, 180, 216, 0.2);
+            --light: #F8F9FF;
+            --dark: #1E1E2C;
+            --success: #4FD69C;
+            --error: #FF6B6B;
+            --radius: 8px;
+            --radius-lg: 12px;
+            --shadow: 0 4px 12px rgba(15, 76, 117, 0.1);
+            --sidebar-width: 280px;
+        }
+
+        html, body, .admin-wrapper, .admin-main {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+        }
+
+        .admin-main {
+            margin-left: var(--sidebar-width);
+            background: #f5f9fc;
+            display: flex;
+        }
+
+        .form-container {
+            flex: 1;
+            padding: 2rem;
+            display: flex;
+            overflow: hidden;
+        }
+
+        .form-card {
+            background: white;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow);
+            padding: 2.5rem;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            border-top: 4px solid var(--primary);
+        }
+
+        .admin-header {
+            text-align: left;
+            margin-bottom: 2rem;
+            position: relative;
+            padding-bottom: 1rem;
+        }
+
+        .admin-header::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 60px;
+            height: 4px;
+            background: linear-gradient(to right, var(--primary), var(--accent));
+            border-radius: 2px;
+        }
+
+        .admin-title {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin: 0 0 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .admin-title i {
+            color: var(--accent);
+            font-size: 1.8rem;
+        }
+
+        .admin-subtitle {
+            color: #6B7280;
+            font-size: 1.05rem;
+            margin: 0;
+            font-weight: 400;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: var(--primary);
+            font-size: 0.95rem;
+        }
+
+        select.form-control {
+            appearance: none;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 1rem center;
+            background-size: 1em;
+            padding-right: 2.5rem;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 0.85rem 1.25rem;
+            font-size: 1rem;
+            border: 1px solid #d1d5db;
+            border-radius: var(--radius);
+            transition: all 0.3s ease;
+            background-color: #f9fafb;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--accent-light);
+        }
+
+        textarea.form-control {
+            min-height: 180px;
+            resize: vertical;
+        }
+
+        .two-col {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .price-container {
+            display: flex;
+            align-items: center;
+        }
+
+        .price-currency {
+            padding: 0.85rem 1rem;
+            background: #f1f5f9;
+            border: 1px solid #d1d5db;
+            border-left: none;
+            border-radius: 0 var(--radius) var(--radius) 0;
+            color: var(--primary);
+        }
+
+        .upload-container {
+            position: relative;
+            height: 200px;
+            width: 100%;
+        }
+
+        .image-upload-wrapper {
+            height: 70%;
+            width: 70%;
+            border: 2px dashed #d1d5db;
+            border-radius: var(--radius);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            cursor: pointer;
+            background: #f9fafb;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .image-upload-wrapper:hover {
+            border-color: var(--accent);
+            background: var(--accent-light);
+        }
+
+        .upload-icon {
+            font-size: 2rem;
+            color: var(--accent);
+            margin-bottom: 0.75rem;
+        }
+
+        .upload-text {
+            font-size: 0.9rem;
+            margin: 0.25rem 0;
+            color: var(--dark);
+        }
+
+        .upload-hint {
+            font-size: 0.8rem;
+            color: #6B7280;
+        }
+
+        .image-preview {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: none;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+
+        .image-input {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            border: 0;
+        }
+
+        .form-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 1rem;
+            margin-top: 0;              /* Remove top margin completely */
+            padding-top: 0.25rem;       /* Minimal padding */
+            margin-bottom: 1rem;        /* Add space below instead */
+            border-top: none;           /* Remove the top border */
+            position: relative;         /* For potential fine-tuning */
+            top: -10px;                 /* Pull up by 10px */
+        }
+
+        .btn {
+            padding: 0.9rem 1.75rem;
+            font-size: 1rem;
+            border-radius: var(--radius);
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.75rem;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .btn-submit {
+            background: var(--primary);
+            color: white;
+            border: none;
+            transform: translateY(-50px);
+        }
+
+        .btn-submit:hover {
+            background: var(--secondary);
+        
+            box-shadow: var(--shadow);
+        }
+
+        .btn-return {
+            background: white;
+            color: var(--primary);
+            border: 1px solid #d1d5db;
+            text-decoration: none;
+            transform: translateY(-50px);
+        }
+
+        .btn-return:hover {
+            background: #f9fafb;
+            border-color: var(--accent);
+            color: var(--secondary);
+        }
+
+        .btn-add-image {
+            background: var(--accent);
+            color: white;
+            border: none;
+            margin-top: 1rem;
+        }
+
+        .btn-add-image:hover {
+            background: var(--primary);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow);
+        }
+        .is-invalid {
+            border-color: var(--danger) !important;
+            box-shadow: 0 0 0 0.2rem rgba(255, 107, 107, 0.25);
+        }
+        
+        .invalid-feedback {
+            color: var(--danger);
+            font-size: 0.875em;
+            margin-top: 0.25rem;
+        }
+    </style>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Image preview functionality
+            const imageInput = document.getElementById('materiel_imageFile');
+            const preview = document.getElementById('imagePreview');
+            const uploadWrapper = document.querySelector('.image-upload-wrapper');
+            const addButton = document.getElementById('addImageButton');
+            
+            // Ensure elements are found
+            if (!imageInput) {
+                console.error('Image input not found');
+                return;
+            }
+            if (!uploadWrapper) {
+                console.error('Upload wrapper not found');
+            }
+            if (!addButton) {
+                console.error('Add button not found');
+            }
+            
+            // Trigger file input when clicking on the wrapper or the add button
+            if (uploadWrapper) {
+                uploadWrapper.addEventListener('click', function() {
+                    console.log('Upload wrapper clicked');
+                    imageInput.click();
+                });
+            }
+            
+            if (addButton) {
+                addButton.addEventListener('click', function() {
+                    console.log('Add button clicked');
+                    imageInput.click();
+                });
+            }
+
+            // Handle file input change
+            imageInput.addEventListener('change', function(e) {
+                console.log('Image input changed');
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        preview.src = e.target.result;
+                        preview.style.display = 'block';
+                        console.log('Image preview updated');
+                    }
+                    reader.readAsDataURL(file);
+                }
+            });
+            
+            // Drag and drop functionality
+            if (uploadWrapper) {
+                uploadWrapper.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    uploadWrapper.style.borderColor = 'var(--accent)';
+                    uploadWrapper.style.backgroundColor = 'rgba(0, 180, 216, 0.1)';
+                    console.log('Drag over');
+                });
+
+                uploadWrapper.addEventListener('dragleave', () => {
+                    uploadWrapper.style.borderColor = '#E5E7EB';
+                    uploadWrapper.style.backgroundColor = 'transparent';
+                    console.log('Drag leave');
+                });
+
+                uploadWrapper.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    uploadWrapper.style.borderColor = '#E5E7EB';
+                    uploadWrapper.style.backgroundColor = 'transparent';
+                    console.log('File dropped');
+
+                    if (e.dataTransfer.files.length) {
+                        imageInput.files = e.dataTransfer.files;
+                        const event = new Event('change');
+                        imageInput.dispatchEvent(event);
+                    }
+                });
+            }
+        });
+    </script>
+{% endblock %}
+
+{% block admin_content %}
+    <div class="form-container">
+        <div class="form-card">
+            <div class="admin-header">
+                <h1 class="admin-title"><i class="fas fa-plus-circle"></i> Create New Material</h1>
+                <p class="admin-subtitle">Fill in the details of your new material</p>
+            </div>
+            
+            {{ form_start(form, {'attr': {'novalidate': 'novalidate'}}) }}
+                <div class="two-col">
+                    <div class="form-group">
+                        {{ form_label(form.nom, 'Material Name') }}
+                        {{ form_widget(form.nom, {'attr': {
+                            'class': 'form-control' ~ (form.nom.vars.errors|length ? ' is-invalid' : ''),
+                            'placeholder': 'Enter a catchy name'
+                            
+                        }}) }}
+                        {% if form.nom.vars.errors|length %}
+                            <div class="invalid-feedback">
+                                {{ form.nom.vars.errors[0].message }}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                   <div class="form-group">
+    {{ form_label(form.prix, 'Price (TND)') }}
+    <div class="price-container">
+        {{ form_widget(form.prix, {
+            'attr': {
+                'class': 'form-control' ~ (not form.prix.vars.valid ? ' is-invalid' : ''),
+                'placeholder': 'Enter the price'
+            }
+        }) }}
+        <span class="price-currency">TND</span>
+    </div>
+
+    {% if not form.prix.vars.valid %}
+    <div class="invalid-feedback d-block">  {# d-block ensures visibility #}
+        {% for error in form.prix.vars.errors %}
+            <div>{{ error.message }}</div>  {# div instead of p for better spacing #}
+        {% endfor %}
+    </div>
+{% endif %}
+</div>
+
+                </div>
+                
+                <div class="two-col">
+                    <div class="form-group">
+                        {{ form_label(form.etat, 'Status') }}
+                        {{ form_widget(form.etat, {'attr': {
+                            'class': 'form-control' ~ (form.etat.vars.errors|length ? ' is-invalid' : ''),
+                            'placeholder': 'Select status'
+                        }}) }}
+                        {% if form.etat.vars.errors|length %}
+                            <div class="invalid-feedback">
+                                {{ form.etat.vars.errors[0].message }}
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="form-group">
+                        {{ form_label(form.typeMaterielId, 'Material Type') }}
+                        {{ form_widget(form.typeMaterielId, {'attr': {
+                            'class': 'form-control' ~ (form.typeMaterielId.vars.errors|length ? ' is-invalid' : ''),
+                            'placeholder': 'Select material type'
+                        }}) }}
+                        {% if form.typeMaterielId.vars.errors|length %}
+                            <div class="invalid-feedback">
+                                {{ form.typeMaterielId.vars.errors[0].message }}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="materiel_imageFile">Material Image</label>
+                    <div class="upload-container">
+                        <div class="image-upload-wrapper">
+                            <i class="fas fa-cloud-upload-alt upload-icon"></i>
+                            <div class="upload-text">Click to upload a new image</div>
+                            <div class="upload-hint">Accepted formats: JPG, PNG (max 5MB)</div>
+                        </div>
+                        {{ form_widget(form.imageFile, {'attr': {
+                            'class': 'image-input' ~ (form.imageFile.vars.errors|length ? ' is-invalid' : ''),
+                            'accept': 'image/*',
+                            'id': 'materiel_imageFile'
+                        }}) }}
+                         {% if form.imageFile.vars.errors|length %}
+                            <div class="invalid-feedback d-block">
+                                {{ form.imageFile.vars.errors[0].message }}
+                            </div>
+                        {% endif %}
+                        <img id="imagePreview" class="image-preview" alt="Preview">
+                        <button type="button" id="addImageButton" class="btn btn-add-image">
+                            <i class="fas fa-plus"></i> Add Image
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="form-actions">
+                    <a href="{{ path('admin_gestionmateriel_index') }}" class="btn btn-return">
+                        <i class="fas fa-arrow-left"></i> Cancel
+                    </a>
+                    <button type="submit" class="btn btn-submit">
+                        <i class="fas fa-check"></i> Save Material
+                    </button>
+                </div>
+            {{ form_end(form) }}
+        </div>
+    </div>
+{% endblock %}

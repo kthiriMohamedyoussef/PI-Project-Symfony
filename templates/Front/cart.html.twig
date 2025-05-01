@@ -1,0 +1,115 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Eventopia - Cart{% endblock %}
+
+{% block navbar %}
+	<div style="background-color:white; margin-bottom:95px;">
+		{% include 'Front/navbar.html.twig' %}
+	</div>
+{% endblock %}
+
+{% block body %}
+	<!-- Hero Banner for Cart -->
+	<div class="container-fluid mt-5 mb-5" style="padding-left:4%; padding-right:4%;">
+		<div style="width: 100%; text-align: center; margin-bottom: 50px;
+	    background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)),
+	    url('https://images.unsplash.com/photo-1478147427282-58a87a120781?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8N3x8ZXZlbnRzfGVufDB8fDB8fHww');
+	    background-size: cover;
+	    background-position: center;
+	    padding: 100px 20px;
+	    border-radius: 8px;
+	    box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+			<h1 style="color: white; font-weight: bold; font-size: 3rem; margin-bottom: 20px;">Your Cart</h1>
+			<p style="color: white; font-size: 1.5rem; margin-bottom: 30px;">
+				Review your selected materials and proceed to reserve them with
+				<span style="color: #ffc107; font-weight: bold;">Eventopia</span>
+			</p>
+		</div>
+	</div>
+
+	<!-- Cart List -->
+	<div class="container-fluid mb-5" style="padding-left:8%; padding-right:8%;">
+		{% if cart is empty %}
+			<p class="text-center">Your cart is currently empty.</p>
+		{% else %}
+			{% for item in cart %}
+				<!-- Cart Item -->
+				<div class="card mb-4" style="border-radius: 10px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+					<div class="row g-0">
+						<!-- Material Image (Left Side) -->
+						<div class="col-md-5">
+							{% if item.material.imagePath %}
+								<img src="{{ asset(item.material.imagePath) }}" class="img-fluid h-100" style="object-fit: cover; min-height: 300px;" alt="{{ item.material.nom }}">
+							{% else %}
+								<img src="{{ asset('images/default.png') }}" class="img-fluid h-100" style="object-fit: cover; min-height: 300px;" alt="Image not available">
+							{% endif %}
+						</div>
+
+						<!-- Material Details (Right Side) -->
+						<div class="col-md-7">
+							<div class="card-body h-100 d-flex flex-column" style="padding: 2rem;">
+								<h3 class="card-title">{{ item.material.nom }}</h3>
+								<p class="card-text text-muted mb-3">
+									
+									<span style="font-weight: bold;">Type:</span> {{ typeMaterielNames[item.material.typeMaterielId] ?? 'N/A' }}
+								</p>
+
+								<p class="card-text text-muted mb-3">
+									
+									<span style="font-weight: bold;">Quantity:</span> 
+									<input type="number" name="quantity" value="{{ item.quantity }}" min="1" class="form-control quantity-input" data-price="{{ item.material.prix }}" style="width: 80px; display: inline-block;">
+								</p>
+
+								<div class="mt-auto d-flex justify-content-between align-items-center">
+    <h4 class="mb-0 text-primary total-price">{{ item.material.prix * item.quantity }} TND</h4>
+     <a href="{{ path('front_gestionmateriel_cart_remove', {'id': item.material.id}) }}" 
+       class="btn btn-danger px-4 py-2"
+       style="font-weight: 600;"
+       onclick="return confirm('Are you sure you want to remove this item from the cart?');">
+       Remove
+    </a>
+</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			{% endfor %}
+
+			<!-- Cart Submit Button -->
+			<div class="text-center mt-4">
+				<a href="{{ path('front_gestionmateriel_cart_submit') }}" class="btn btn-success px-5 py-2" style="font-weight: 600; font-size: 1.2rem;">Submit / Reserve Materials</a>
+			</div>
+		{% endif %}
+	</div>
+{% endblock %}
+
+{% block javascripts %}
+	{{ parent() }}
+	<script>
+		document.addEventListener('DOMContentLoaded', function () {
+			// Select all quantity input fields
+			const quantityInputs = document.querySelectorAll('.quantity-input');
+
+			quantityInputs.forEach(input => {
+				// Add event listener for quantity change
+				input.addEventListener('input', function () {
+					// Get the price and parent container
+					const price = parseFloat(this.dataset.price);
+					const cardBody = this.closest('.card-body');
+
+					// Calculate the new total price
+					const totalPriceElement = cardBody.querySelector('.total-price');
+					const quantity = parseInt(this.value) || 1; // Fallback to 1 if invalid
+					const totalPrice = (price * quantity).toFixed(2);
+
+					// Update the total price display
+					totalPriceElement.textContent = `${totalPrice} TND`;
+				});
+			});
+		});
+	</script>
+{% endblock %}
+
+{% block footer %}
+	{% include 'Front/footer.html.twig' %}
+{% endblock %}

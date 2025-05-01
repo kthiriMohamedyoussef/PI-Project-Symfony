@@ -1,0 +1,309 @@
+{% extends 'base.html.twig' %}
+{% block title %}Eventopia | Espaces{% endblock %}
+
+{% block navbar %}
+    <div style="background-color: white; margin-bottom: 95px;">
+        {% include 'Front/navbar.html.twig' %}
+    </div>
+{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #0f4c75;
+            --light: #f8f9fc;
+            --border: #e0e3e8;
+            --text: #2d3748;
+            --text-light: #718096;
+            --success: #4fd69c;
+            --danger: #ff6b6b;
+        }
+        /* Hero Section */
+        .hero-banner {
+            background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url("https://img.freepik.com/free-photo/warm-welcoming-atmosphere-as-guests-arrive-party-venue_1268-30713.jpg?t=st=1744966594~exp=1744970194~hmac=4f846145cb6641040a8083015d02e5ff7a083df5439e9a60185ea690cdebcbed&w=1380") no-repeat center center;
+            background-size: cover;
+            color: white;
+            text-align: center;
+            padding: 6rem 1rem;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+        }
+        .hero-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+        .hero-subtitle {
+            font-size: 1.25rem;
+            margin-bottom: 2rem;
+        }
+        /* Search Bar */
+        .search-container {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 2rem;
+        }
+        .search-box {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+        }
+        .search-input {
+            width: 100%;
+            padding: 10px 15px 10px 40px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+        .search-input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(15, 76, 117, 0.2);
+            outline: none;
+        }
+        .search-icon {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-light);
+        }
+        /* Espace Cards */
+        .espace-list {
+            display: flex;
+            flex-direction: column; /* Stack cards vertically */
+            gap: 2rem; /* Add spacing between cards */
+            padding: 2rem;
+        }
+        .espace-card {
+            display: flex;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            height: auto; /* Ensure card adapts to content */
+        }
+        .espace-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        }
+        .espace-image {
+            flex: 1;
+            object-fit: cover;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4e8ed 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .espace-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .espace-content {
+            flex: 2;
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between; /* Push details to bottom */
+            height: 100%; /* Match container height */
+        }
+        .espace-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+        }
+        .espace-meta {
+            font-size: 0.875rem;
+            color: var(--text-light);
+            margin-bottom: 1rem;
+        }
+        .espace-type {
+            font-size: 0.9rem;
+            color: var(--text);
+            margin-bottom: 1rem;
+        }
+        .view-details {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            background: var(--primary);
+            color: white;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: background 0.3s ease;
+            align-self: flex-end; /* Align to bottom-right */
+        }
+        .view-details:hover {
+            background: #3282b8;
+        }
+        /* Status Badges */
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        .status-badge.available {
+            background-color: var(--success);
+            color: white;
+        }
+        .status-badge.unavailable {
+            background-color: var(--danger);
+            color: white;
+        }
+        /* Icon Padding */
+        .icon-with-padding {
+            margin-right: 0.5rem; /* Add padding between icon and text */
+        }
+        /* Filter Buttons */
+        .filters-container {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-bottom: 2rem;
+        }
+        .filter-btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .filter-btn.active {
+            background-color: var(--primary);
+            color: white;
+        }
+        .filter-btn:not(.active) {
+            background-color: #f8f9fc;
+            color: var(--text);
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+    <!-- Hero Banner -->
+    <div class="hero-banner">
+        <h1 class="hero-title" style="color:white">Nos Espaces</h1>
+        <p class="hero-subtitle">Découvrez les espaces disponibles pour vos événements.</p>
+    </div>
+
+    <!-- Search and Filters -->
+    <div class="container">
+        <div class="filters-container">
+            <button class="filter-btn active" data-filter="all">Tous</button>
+            <button class="filter-btn" data-filter="DISPONIBLE">Disponible</button>
+            <button class="filter-btn" data-filter="INDISPONIBLE">Indisponible</button>
+        </div>
+        <div class="search-container">
+            <div class="search-box">
+                <i class="fas fa-search search-icon"></i>
+                <input type="text" class="search-input" placeholder="Rechercher un espace..." id="searchInput">
+            </div>
+        </div>
+    </div>
+
+    <!-- Espace List -->
+    <div class="container">
+        <div id="espaceList">
+            <div class="espace-list">
+                {% for espace in espaces %}
+                    <div class="espace-card" data-name="{{ espace.nom|lower }}" data-etat="{{ espace.etat }}">
+                        <div class="row g-0">
+                            <!-- Espace Image (Left Side) -->
+                            <div class="col-md-5">
+                                <div class="espace-image" style="height: 100%;">
+                                    {% if espace.imageUrl %}
+                                        <img src="{{ asset('uploads/images/' ~ espace.imageUrl) }}" alt="{{ espace.nom }}">
+                                    {% else %}
+                                        <i class="fas fa-image fa-2x"></i>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <!-- Espace Content (Right Side) -->
+                            <div class="col-md-7">
+                                <div class="card-body h-100 d-flex flex-column" style="padding: 2rem;">
+                                    <h3 class="espace-title">{{ espace.nom }}</h3>
+                                    <!-- Location with Icon -->
+                                    <p class="espace-meta">
+                                        <i class="fas fa-map-marker-alt me-2 icon-with-padding"></i>{{ espace.localisation }}
+                                    </p>
+                                    <!-- Espace Type -->
+                                    <p class="espace-type">
+                                        <i class="fas fa-building me-2 icon-with-padding"></i>{{ espace.typeEspace.type }}
+                                    </p>
+                                    <!-- Status Badge -->
+                                    <div class="mt-auto d-flex justify-content-between align-items-center">
+                                        <span class="status-badge {{ espace.etat == 'DISPONIBLE' ? 'available' : 'unavailable' }}">{{ espace.etat }}</span>
+                                        <a href="{{ path('app_espace_details', {'id': espace.id}) }}" class="view-details">
+                                            Voir les détails
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+        <div id="noResults" class="alert alert-info" style="display: none; text-align: center;">
+            Aucun espace trouvé correspondant à votre recherche.
+        </div>
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        // Search functionality
+        document.addEventListener('DOMContentLoaded', function () {
+            const searchInput = document.getElementById('searchInput');
+            const espaceCards = document.querySelectorAll('.espace-card');
+            const noResults = document.getElementById('noResults');
+
+            searchInput.addEventListener('input', function () {
+                const searchTerm = this.value.trim().toLowerCase();
+                let hasResults = false;
+
+                espaceCards.forEach(card => {
+                    const cardName = card.getAttribute('data-name');
+                    if (cardName.includes(searchTerm)) {
+                        card.style.display = 'flex';
+                        hasResults = true;
+                    } else {
+                        card.style.display = 'none';
+                    }
+                });
+
+                // Show/hide "No results" message
+                noResults.style.display = hasResults ? 'none' : 'block';
+            });
+
+            // Filter by etat functionality
+            const filterBtns = document.querySelectorAll('.filter-btn');
+            filterBtns.forEach(btn => {
+                btn.addEventListener('click', function () {
+                    // Remove 'active' class from all buttons
+                    filterBtns.forEach(b => b.classList.remove('active'));
+                    this.classList.add('active'); // Add 'active' class to the clicked button
+
+                    const filter = this.dataset.filter; // Get the selected filter value
+                    espaceCards.forEach(card => {
+                        const etat = card.getAttribute('data-etat'); // Get the card's etat
+                        if (filter === 'all' || etat === filter) {
+                            card.style.display = 'flex'; // Show the card
+                        } else {
+                            card.style.display = 'none'; // Hide the card
+                        }
+                    });
+                });
+            });
+        });
+    </script>
+{% endblock %}
