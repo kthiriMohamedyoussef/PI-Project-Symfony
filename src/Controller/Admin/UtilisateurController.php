@@ -18,10 +18,13 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use App\Form\LoginType;
+use App\Form\ProfileUpdateType;
+use App\Service\EmailService;
 use Symfony\Component\String\Slugger\SluggerInterface;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
-
+use Symfony\Component\Form\FormError;
+use Symfony\Component\Form\FormInterface;   
 class UtilisateurController extends AbstractController
 {
     private UserPasswordHasherInterface $passwordHasher;
@@ -198,9 +201,9 @@ class UtilisateurController extends AbstractController
         }
     
     }
-        #[Route('/utilisateur/updateProfile', name: 'update_profile')]
+    
+    #[Route('/utilisateur/updateProfile', name: 'update_profile')]
     public function updateProfile(
-        
         Request $request,
         EntityManagerInterface $entityManager,
         UserPasswordHasherInterface $passwordHasher,
@@ -214,14 +217,8 @@ class UtilisateurController extends AbstractController
         if (!$utilisateur) {
             throw $this->createNotFoundException('Utilisateur non trouvé.');
         }
-        $user = $this->getCustomUser($entityManager, $request->getSession());
     
-        $form = $this->createForm(UtilisateurType::class, $utilisateur, [
-            'is_creation' => true,
-            'is_signup' => false , // Not a signup form
-            'is_update' => true,  // This is an update form
-        ]);
-    
+        $form = $this->createForm(ProfileUpdateType::class, $utilisateur);
         $form->handleRequest($request);
     
         if ($form->isSubmitted() && $form->isValid()) {
@@ -251,8 +248,6 @@ class UtilisateurController extends AbstractController
                 $safeFilename = $slugger->slug($originalFilename);
                 $newFilename = $safeFilename . '-' . uniqid() . '.' . $imageFile->guessExtension();
     
-                // Define the destination file path
-                $destinationFilePath = $destinationDir . '/' . $newFilename;
                 try {
                     // Move the uploaded image to the destination directory
                     $imageFile->move($destinationDir, $newFilename);
@@ -262,6 +257,11 @@ class UtilisateurController extends AbstractController
                 } catch (FileException $e) {
                     // Handle file upload error
                     $this->addFlash('error', 'Error while uploading the image.');
+                }
+            } else {
+                // Ensure the existing image URL is retained if no new image is uploaded
+                if (!$utilisateur->getImageurl()) {
+                    $utilisateur->setImageurl('images/default-profile.png'); // Set a default image if none exists
                 }
             }
     
@@ -278,14 +278,14 @@ class UtilisateurController extends AbstractController
             $this->addFlash('success', 'Utilisateur mis à jour avec succès!');
             return $this->redirectToRoute('admin_utilisateur');
         }
+    
         // Render the form view
         return $this->render('Front/editProfile.html.twig', [
             'user' => $user,
             'form' => $form->createView(),
-            
         ]);
     }
-    
+
 
 #[Route('/admin/utilisateur/delete/{id}', name: 'admin_delete_utilisateur', methods: ['POST'])]
 public function deleteUtilisateur(
@@ -308,47 +308,108 @@ public function deleteUtilisateur(
 #[Route('/signup', name: 'app_signup')]
 public function signup(
     Request $request,
-    EntityManagerInterface $em,
-    UserPasswordHasherInterface $hasher
+    EmailService $emailService,
+    EmailService $emailVerificationService,
+    UtilisateurRepository $utilisateurRepository,
+    SessionInterface $session
 ): Response {
     $user = new Utilisateur();
-    
-    // Create the form with the 'is_signup' option
+
     $form = $this->createForm(UtilisateurType::class, $user, [
         'is_signup' => true,
     ]);
 
     $form->handleRequest($request);
 
+    // Validate reCAPTCHA
+   
     if ($form->isSubmitted() && $form->isValid()) {
-        // Handle password hashing
-        $user->setMotdepasse(
-            $hasher->hashPassword($user, $user->getMotdepasse())
-        );
+        // Check if reCAPTCHA validation is successful
+        
+            $email = $user->getEmail();
 
-        // Handle address persistence
-        $adresse = $user->getAdresse();
-        if ($adresse) {
-            $em->persist($adresse); // Persist the address if it's provided
+            // 1. Check if the email already exists in the database
+            if ($utilisateurRepository->findOneBy(['email' => $email])) {
+                $form->get('email')->addError(new FormError('This email is already registered.'));
+            } else {
+                // 2. Use Abstract API to check if the email is real
+                $isValid = $emailVerificationService->isDeliverable($email);
+
+                if (!$isValid) {
+                    $form->get('email')->addError(new FormError('This email appears to be invalid.'));
+                } else {
+                    // Store user in session
+                    $session->set('pending_user', serialize($user));
+
+                    // Send verification token
+                    $emailService->sendVerificationToken($email);
+
+                    return $this->redirectToRoute('verify_token');
+                }
+            }
         }
-        $user->setRole(Role::PARTICIPANT); // Set the Role to the user
+    
 
-        // Persist the user
-        $em->persist($user);
-        $em->flush(); // Save both the address and user to the database
-
-        // Optionally, add a success flash message
-        $this->addFlash('success', 'Account created successfully!');
-
-        // Redirect to login page after successful signup
-        return $this->redirectToRoute('app_login');
-    }
-
-    // Render the signup page with the form view
     return $this->render('front/signup.html.twig', [
         'form' => $form->createView(),
+        'google_recaptcha_site_key' => $_ENV['RECAPTCHA_SITE_KEY'],
     ]);
 }
+
+#[Route('/verify-token', name: 'verify_token')]
+public function verifyToken(
+    Request $request,
+    SessionInterface $session,
+    EntityManagerInterface $em,
+    UserPasswordHasherInterface $hasher,
+    EmailService $emailService
+): Response {
+    $message = null; // Initialize the message variable
+
+    if ($request->isMethod('POST')) {
+        $inputToken = $request->request->get('token');
+
+        if ($emailService->isTokenValid($inputToken)) {
+            $serializedUser = $session->get('pending_user');
+
+            if ($serializedUser) {
+                /** @var Utilisateur $user */
+                $user = unserialize($serializedUser);
+
+                // Hash the password again
+                $user->setMotdepasse(
+                    $hasher->hashPassword($user, $user->getMotdepasse())
+                );
+
+                // Set default role
+                $user->setRole(Role::PARTICIPANT);
+
+                // Persist address if set
+                if ($user->getAdresse()) {
+                    $em->persist($user->getAdresse());
+                }
+
+                // Persist user
+                $em->persist($user);
+                $em->flush();
+
+                // Clear session/token
+                $emailService->clearToken();
+                $session->remove('pending_user');
+
+                $message = 'Your email has been verified. You can now log in.';
+            }
+        } else {
+            $message = 'Invalid or expired verification token.';
+        }
+    }
+
+    return $this->render('front/verifemail.html.twig', [
+        'message' => $message,  // Pass the message to the template
+    ]);
+}
+
+
 
     #[Route('/logout', name: 'app_logout')]
     public function logout(SessionInterface $session): Response
@@ -399,6 +460,146 @@ public function signup(
             'form' => $form->createView(),
         ]);
     }
+
+    #[Route('/forgot-password', name: 'forgot_password')]
+public function forgotPassword(
+    Request $request,
+    UtilisateurRepository $utilisateurRepository,
+    EmailService $emailService,
+    SessionInterface $session
+): Response {
+    if ($request->isMethod('POST')) {
+        $email = $request->request->get('email');
+        $user = $utilisateurRepository->findOneBy(['email' => $email]);
+
+        if (!$user) {
+            // Don't reveal if user exists for security
+            $this->addFlash('success', 'If an account exists with this email, a token has been sent.');
+            return $this->redirectToRoute('forgot_password');
+        }
+
+        // Generate 8-digit token
+        $token = str_pad(random_int(0, 99999999), 8, '0', STR_PAD_LEFT);
+        $expiresAt = new \DateTimeImmutable('+1 hour');
+
+        // Store token hash and expiration in session
+        $session->set('reset_token_hash', hash('sha256', $token));
+        $session->set('reset_user_id', $user->getId());
+        $session->set('reset_token_expires_at', $expiresAt);
+
+        // Send email with the token
+        $emailService->sendPasswordResetToken($user->getEmail(), $token);
+
+        $this->addFlash('success', 'An 8-digit password reset token has been sent to your email.');
+        return $this->redirectToRoute('verify_reset_token');
+    }
+
+    return $this->render('front/forgot_password.html.twig');
+}
+
+#[Route('/verify-reset-token', name: 'verify_reset_token')]
+public function verifyResetToken(
+    Request $request,
+    SessionInterface $session,
+    UtilisateurRepository $utilisateurRepository
+): Response {
+    // Check if there's an active reset process
+    if (!$session->has('reset_token_hash')) {
+        $this->addFlash('error', 'No password reset requested.');
+        return $this->redirectToRoute('forgot_password');
+    }
+
+    if ($request->isMethod('POST')) {
+        $token = $request->request->get('token');  // Get the token from form input
+        
+        if (!$token || strlen($token) !== 8) {
+            $this->addFlash('error', 'Invalid token format. Please enter an 8-digit code.');
+            return $this->redirectToRoute('verify_reset_token');
+        }
+
+        // Retrieve session token data
+        $sessionToken = $session->get('reset_token_hash');
+        $expiresAt = $session->get('reset_token_expires_at');
+
+        // Check if the token is expired
+        if ($expiresAt && new \DateTimeImmutable() > $expiresAt) {
+            $this->clearResetSession($session);
+            $this->addFlash('error', 'Token has expired. Please request a new one.');
+            return $this->redirectToRoute('forgot_password');
+        }
+
+        // Compare the token hash in session with the submitted token
+        if (!hash_equals($sessionToken, hash('sha256', $token))) {
+            $this->addFlash('error', 'Invalid token.');
+            return $this->redirectToRoute('verify_reset_token');
+        }
+
+        // Token is valid, proceed to reset password
+        return $this->redirectToRoute('reset_password');
+    }
+
+    return $this->render('front/verify_reset_token.html.twig');
+}
+
+
+
+
+
+#[Route('/reset-password', name: 'reset_password')]
+public function resetPassword(
+    Request $request,
+    SessionInterface $session,
+    UtilisateurRepository $utilisateurRepository,
+    EntityManagerInterface $em,
+    UserPasswordHasherInterface $passwordHasher
+): Response {
+    // Verify active reset session
+    if (!$session->has('reset_token_hash') || !$session->has('reset_user_id')) {
+        $this->addFlash('error', 'Password reset session expired.');
+        return $this->redirectToRoute('forgot_password');
+    }
+
+    $userId = $session->get('reset_user_id');
+    $user = $utilisateurRepository->find($userId);
+
+    if (!$user) {
+        $this->clearResetSession($session);
+        $this->addFlash('error', 'User not found.');
+        return $this->redirectToRoute('forgot_password');
+    }
+
+    if ($request->isMethod('POST')) {
+        $newPassword = $request->request->get('password');
+        $confirmPassword = $request->request->get('confirm_password');
+
+        if ($newPassword !== $confirmPassword) {
+            $this->addFlash('error', 'Passwords do not match.');
+            return $this->redirectToRoute('reset_password');
+        }
+
+        // Update password
+        $encodedPassword = $passwordHasher->hashPassword($user, $newPassword);
+        $user->setMotdepasse($encodedPassword);
+        
+        $em->persist($user);
+        $em->flush();
+
+        // Clear session
+        $this->clearResetSession($session);
+
+        $this->addFlash('success', 'Your password has been reset successfully. You can now login with your new password.');
+        return $this->redirectToRoute('app_login');
+    }
+
+    return $this->render('front/reset_password.html.twig');
+}
+
+private function clearResetSession(SessionInterface $session): void
+{
+    $session->remove('reset_token_hash');
+    $session->remove('reset_user_id');
+    $session->remove('reset_token_expires_at');
+}
     
 }
 

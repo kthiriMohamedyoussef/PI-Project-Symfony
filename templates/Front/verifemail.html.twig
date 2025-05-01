@@ -1,6 +1,6 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Login | Eventopia{% endblock %}
+{% block title %}Email Verification | Eventopia{% endblock %}
 
 {% block stylesheets %}
     {{ parent() }}
@@ -16,6 +16,8 @@
             --dark: #1e293b;
             --success: #10b981;
             --error: #ef4444;
+            --warning: #f59e0b;
+            --info: #3b82f6;
             --radius: 12px;
             --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
             --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
@@ -63,12 +65,7 @@
             align-items: center;
         }
 
-        .navbar-brand i {
-            margin-right: 0.75rem;
-            color: var(--accent);
-        }
-
-        .login-container {
+        .verification-container {
             width: 100%;
             display: flex;
             justify-content: center;
@@ -77,7 +74,7 @@
             min-height: 100vh;
         }
 
-        .login-card {
+        .verification-card {
             width: 100%;
             max-width: 480px;
             background: white;
@@ -99,7 +96,7 @@
             }
         }
 
-        /* Animated Event Icons - Behind content */
+        /* Animated Event Icons */
         .event-icons {
             position: absolute;
             width: 100%;
@@ -139,30 +136,26 @@
             }
         }
 
-        /* Content container - Above everything */
+        /* Form Styling */
         .card-content {
             position: relative;
             z-index: 2;
-            background: white;
-            padding: 1.5rem;
-            border-radius: var(--radius);
         }
 
-        .login-header {
+        .verification-header {
             margin-bottom: 2rem;
             text-align: center;
         }
 
-        .login-title {
+        .verification-title {
             font-size: 1.75rem;
             font-weight: 700;
             margin-bottom: 0.75rem;
             color: var(--primary);
             position: relative;
-            display: inline-block;
         }
 
-        .login-title::after {
+        .verification-title::after {
             content: '';
             position: absolute;
             bottom: -8px;
@@ -174,108 +167,96 @@
             border-radius: 3px;
         }
 
-        .login-subtitle {
+        .verification-instructions {
             color: #64748b;
-            font-size: 1rem;
-            margin-top: 1.5rem;
+            margin-bottom: 2rem;
+            text-align: center;
         }
 
+        /* Input Container */
+        .input-container {
+            text-align: center;
+            margin: 2rem 0;
+            transform: translateY(10px);
+            opacity: 0;
+            animation: fadeInUp 0.5s 0.4s forwards;
+        }
+
+        .input-container input {
+            width: 100%;
+            max-width: 300px;
+            height: 60px;
+            text-align: center;
+            font-size: 1.5rem;
+            font-weight: 600;
+            letter-spacing: 0.1em;
+            border: 2px solid #e2e8f0;
+            border-radius: var(--radius);
+            background-color: #f8fafc;
+            transition: var(--transition);
+            padding: 0.5rem;
+        }
+
+        .input-container input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(3, 4, 95, 0.1);
+            outline: none;
+            background: white;
+        }
+
+        /* Form Group */
         .form-group {
-            margin-bottom: 1.5rem;
+            margin-bottom: 1.2rem;
             position: relative;
             transform: translateY(10px);
             opacity: 0;
             animation: fadeInUp 0.5s 0.4s forwards;
         }
 
-        .form-group:nth-child(2) {
-            animation-delay: 0.5s;
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 0.5rem;
-            font-weight: 500;
-            color: var(--dark);
-            font-size: 0.95rem;
-        }
-
-        .form-control {
-            width: 100%;
-            padding: 0.9rem 1.2rem;
-            font-size: 1rem;
-            border: 1px solid #e2e8f0;
-            border-radius: var(--radius);
-            transition: var(--transition);
-            background-color: #f8fafc;
-        }
-
-        .form-control:focus {
-            outline: none;
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(3, 4, 95, 0.1);
-            background: white;
-        }
-
-        .password-wrapper {
-            position: relative;
-        }
-
-        .toggle-password {
-            position: absolute;
-            right: 1rem;
-            top: 50%;
-            transform: translateY(-50%);
-            cursor: pointer;
-            color: #94a3b8;
-        }
-
-        .forgot-password {
-            display: block;
-            text-align: right;
-            margin-top: 0.5rem;
-            font-size: 0.85rem;
-        }
-
-        .forgot-password a {
-            color: var(--primary);
-            text-decoration: none;
-        }
-
-        .btn-login {
+        /* Submit Button */
+        .btn-verify {
             background: var(--primary);
             color: white;
             border: none;
-            padding: 1rem;
-            font-size: 1.1rem;
+            padding: 0.9rem;
+            font-size: 1rem;
             border-radius: var(--radius);
             width: 100%;
             font-weight: 600;
             cursor: pointer;
-            margin-top: 1rem;
-            position: relative;
+            margin-top: 0.5rem;
+            transition: var(--transition);
             transform: translateY(10px);
             opacity: 0;
             animation: fadeInUp 0.5s 0.6s forwards;
         }
 
-        .signup-link {
-            text-align: center;
-            margin-top: 2rem;
-            color: #64748b;
-            font-size: 0.95rem;
+        .btn-verify:hover {
+            background: var(--primary-dark);
+        }
+
+        /* Alert Message */
+        .alert-info {
+            background: rgba(59, 130, 246, 0.1);
+            color: var(--primary);
+            padding: 1rem;
+            border-radius: var(--radius);
+            margin-bottom: 1.5rem;
+            border-left: 3px solid var(--info);
+            display: flex;
+            align-items: center;
             transform: translateY(10px);
             opacity: 0;
-            animation: fadeInUp 0.5s 0.7s forwards;
+            animation: fadeInUp 0.5s 0.3s forwards;
         }
 
-        .signup-link a {
-            color: var(--primary);
-            font-weight: 500;
-            text-decoration: none;
+        .alert-info i {
+            margin-right: 0.75rem;
+            color: var(--info);
+            font-size: 1.2rem;
         }
 
-        /* Event icon positions and animations */
+        /* Event icon positions */
         .event-icon:nth-child(1) {
             top: 10%;
             left: 10%;
@@ -296,47 +277,39 @@
             left: 80%;
             animation: floatIn 9s 1.5s infinite;
         }
-        .event-icon:nth-child(5) {
-            top: 15%;
-            left: 70%;
-            animation: floatIn 8s 0.5s infinite;
-        }
-        .event-icon:nth-child(6) {
-            top: 60%;
-            left: 5%;
-            animation: floatIn 10s 2.5s infinite;
-        }
 
         @media (max-width: 768px) {
             .navbar {
                 padding: 1rem 1.5rem;
             }
             
-            .navbar-brand {
-                font-size: 1.3rem;
-            }
-            
-            .login-container {
+            .verification-container {
                 padding: 6rem 1.5rem 2rem;
             }
             
-            .login-card {
+            .verification-card {
                 padding: 2rem;
             }
             
-            .event-icon {
-                font-size: 1.5rem;
+            .input-container input {
+                height: 50px;
+                font-size: 1.25rem;
             }
         }
 
         @media (max-width: 480px) {
-            .login-card {
+            .verification-card {
                 border: none;
                 box-shadow: none;
             }
             
             .event-icons {
                 display: none;
+            }
+            
+            .input-container input {
+                height: 45px;
+                font-size: 1.1rem;
             }
         }
     </style>
@@ -349,67 +322,53 @@
     </a>
 </nav>
 
-<div class="login-container">
-    <div class="login-card">
+<div class="verification-container">
+    <div class="verification-card">
         <div class="event-icons">
-            <i class="fas fa-calendar-alt event-icon"></i>
-            <i class="fas fa-glass-cheers event-icon"></i>
-            <i class="fas fa-microphone event-icon"></i>
-            <i class="fas fa-music event-icon"></i>
-            <i class="fas fa-camera event-icon"></i>
-            <i class="fas fa-ticket-alt event-icon"></i>
+            <i class="fas fa-envelope event-icon"></i>
+            <i class="fas fa-shield-alt event-icon"></i>
+            <i class="fas fa-check-circle event-icon"></i>
+            <i class="fas fa-user-check event-icon"></i>
         </div>
 
         <div class="card-content">
-            <div class="login-header">
-                <h2 class="login-title">Welcome Back</h2>
-                {% if form_errors(form) %}
-                <div class="alert alert-danger">
-                    {{ form_errors(form) }}
-                </div>
-                {% endif %}
-                <p class="login-subtitle">We're so excited to see you again!</p>
+            <div class="verification-header">
+                <h2 class="verification-title">Email Verification</h2>
+                <p class="verification-instructions">We've sent a verification token to your email address</p>
             </div>
 
-            {{ form_start(form, {'attr': {'novalidate': 'novalidate', 'data-turbo': 'false'}}) }}
-                <div class="form-group">
-                    {{ form_label(form.email, 'Email') }}
-                    {{ form_widget(form.email, {'attr': {'class': 'form-control', 'placeholder': 'your@email.com'}}) }}
-                    {{ form_errors(form.email) }}
+            {% if message %}
+                <div class="alert-info">
+                    <i class="fas fa-info-circle"></i>
+                    <span>{{ message }}</span>
+                </div>
+            {% endif %}
+
+            <form method="POST" action="{{ path('verify_token') }}">
+                <div class="input-container">
+                    <input type="text" id="token" name="token" maxlength="6" required placeholder="Enter 6-digit code">
                 </div>
 
-                <div class="form-group password-wrapper">
-                    {{ form_label(form.motdepasse, 'Password') }}
-                    {{ form_widget(form.motdepasse, {'attr': {'class': 'form-control', 'placeholder': '••••••••'}}) }}
-                    {{ form_errors(form.motdepasse) }}
-                    <i class="fas fa-eye toggle-password"></i>
-                    <span class="forgot-password">
-                        <a href="{{path('forgot_password')}}">Forgot password?</a>
-                    </span>
+                <div class="form-group full-width">
+                    <button type="submit" class="btn-verify">
+                        Verify Email
+                    </button>
                 </div>
-
-                <button type="submit" class="btn-login">
-                    Login
-                </button>
-            {{ form_end(form) }}
-
-            <div class="signup-link">
-                Don't have an account? <a href="{{ path('app_signup') }}">Sign Up</a>
-            </div>
+            </form>
         </div>
     </div>
 </div>
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Toggle password visibility
-        document.querySelector('.toggle-password').addEventListener('click', function() {
-            const passwordInput = document.querySelector('#{{ form.motdepasse.vars.id }}');
-            const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
-            passwordInput.setAttribute('type', type);
-            this.classList.toggle('fa-eye');
-            this.classList.toggle('fa-eye-slash');
+        // Ensure only numeric input and limit it to 6 digits
+        document.getElementById('token').addEventListener('input', function (e) {
+            const tokenField = e.target;
+            tokenField.value = tokenField.value.replace(/\D/g, '').slice(0, 6);
         });
+        
+        // Auto-focus the input field when page loads
+        document.getElementById('token').focus();
     });
 </script>
 {% endblock %}

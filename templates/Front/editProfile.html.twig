@@ -30,14 +30,14 @@
     <div class="container-fluid mb-5" style="padding-left:8%; padding-right:8%;">
         <div class="card mb-4" style="border-radius: 10px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
             <div class="card-body p-5">
-                {{ form_start(form) }}
+                {{ form_start(form, {'attr': {'enctype': 'multipart/form-data'}}) }}
                 
                 <!-- Avatar Section -->
-                <div class="text-center mb-5">
-                    <div style="width: 150px; height: 150px; border-radius: 50%; overflow: hidden; margin: 0 auto 20px; position: relative; border: 4px solid #6e8efb; background-color: #f8f9fa;">
-                        {% if user.imageurl is defined %}
+                <div class="text-center mb-5" style="position: relative;">
+                    <div id="avatarCircle" style="width: 150px; height: 150px; border-radius: 50%; overflow: hidden; margin: 0 auto 20px; border: 4px solid #6e8efb; background-color: #f8f9fa; cursor: pointer;">
+                        {% if user.imageurl %}
                             <img id="avatarPreview" 
-                                 src="{{ asset('uploads/profile/' ~ user.imageurl) }}" 
+                                 src="{{ asset( user.imageurl) }}" 
                                  style="width: 100%; height: 100%; object-fit: cover;"
                                  alt="Profile Picture"
                                  onerror="this.onerror=null;this.src='{{ asset('images/default-profile.png') }}'">
@@ -45,18 +45,26 @@
                             <img id="avatarPreview" 
                                  src="{{ asset('images/default-profile.png') }}" 
                                  style="width: 100%; height: 100%; object-fit: cover;"
-                                 alt="Default Profile">
+                                 alt="Profile Picture">
                         {% endif %}
-
-                        <label for="user_imageFile" 
-                               style="position: absolute; bottom: 0; right: 0; background: #6e8efb; color: white; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer;">
-                            <i class="fas fa-camera"></i>
-                        </label>
-                        {{ form_widget(form.imageurl, {'attr': {'style': 'display: none;'}}) }}
                     </div>
-                    <h3 style="color: #1E293B;">{{ user.prenom }} {{ user.nom }}</h3>
+                    
+                    <!-- Hidden file input (triggered by clicking the avatar) -->
+                    <input type="file" id="user_imageFile_file" name="user[imageurl]" style="display: none;" accept="image/*">
+
+                    <!-- Remove Image Button (only if the user has an image) -->
+                    {% if user.imageurl %}
+                        <button type="button" id="removeImageBtn" class="btn" style="background: #ff6b6b; color: white; padding: 8px 15px; border-radius: 8px; font-weight: 600; cursor: pointer; border: none;">
+                            <i class="fas fa-trash me-2"></i>Remove
+                        </button>
+                    {% endif %}
+                    {{ form_widget(form.imageurl, {'attr': {'style': 'display: none;'}}) }}
+                    <input type="hidden" id="removeImageFlag" name="remove_image" value="0">
+                    
+                    <h3 style="color: #1E293B; margin-top: 15px;">{{ user.prenom }} {{ user.nom }}</h3>
                 </div>
 
+                <!-- Rest of your form fields remain the same -->
                 <!-- Personal Info -->
                 <div class="row g-4 mb-4">
                     <div class="col-md-6">
@@ -170,37 +178,40 @@
     {{ parent() }}
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Avatar preview
+            const avatarCircle = document.getElementById('avatarCircle');
             const avatarInput = document.getElementById('user_imageFile_file');
             const avatarPreview = document.getElementById('avatarPreview');
+            const removeImageBtn = document.getElementById('removeImageBtn');
+            const removeImageFlag = document.getElementById('removeImageFlag');
             const defaultImage = "{{ asset('images/default-profile.png') }}";
-            
+
+            // Open file input when clicking on the avatar circle
+            if (avatarCircle) {
+                avatarCircle.addEventListener('click', function() {
+                    avatarInput.click();  // Trigger the file input when the circle is clicked
+                });
+            }
+
+            // Image upload preview
             if (avatarInput) {
                 avatarInput.addEventListener('change', function(e) {
                     const file = e.target.files[0];
                     if (file) {
                         const reader = new FileReader();
-                        reader.onload = function(e) {
-                            avatarPreview.src = e.target.result;
-                        }
-                        reader.onerror = function() {
-                            avatarPreview.src = defaultImage;
-                        }
+                        reader.onload = function(event) {
+                            avatarPreview.src = event.target.result;
+                        };
                         reader.readAsDataURL(file);
                     }
                 });
             }
 
-            // Password toggle
-            const passwordInput = document.getElementById('user_plainPassword_first');
-            const togglePassword = document.querySelector('.password-toggle');
-            
-            if (passwordInput && togglePassword) {
-                togglePassword.addEventListener('click', function() {
-                    const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
-                    passwordInput.setAttribute('type', type);
-                    this.classList.toggle('fa-eye');
-                    this.classList.toggle('fa-eye-slash');
+            // Remove image button
+            if (removeImageBtn) {
+                removeImageBtn.addEventListener('click', function() {
+                    avatarPreview.src = defaultImage;
+                    removeImageFlag.value = "1";  // Mark the image for removal
+                    avatarInput.value = '';  // Clear the input
                 });
             }
         });

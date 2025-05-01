@@ -5,7 +5,9 @@
 # https://symfony.com/doc/current/best_practices.html#use-parameters-for-application-configuration
 parameters:
     images_directory: '%kernel.project_dir%/public/uploads/images'
-
+    abstract_api_key: '%env(ABSTRACT_API_KEY)%'
+    recaptcha_site_key: '%env(RECAPTCHA_SITE_KEY)%'
+    recaptcha_secret_key: '%env(RECAPTCHA_SECRET_KEY)%'
 
 services:
     # default configuration for services in *this* file
@@ -24,6 +26,13 @@ services:
             - '../src/Entity/'
             - '../src/Kernel.php'
             - '../src/Tests/'
-
+    App\Service\EmailService:
+        arguments:
+            $mailer: '@Symfony\Component\Mailer\MailerInterface'
+            $logger: '@Psr\Log\LoggerInterface'
+           
+            $twig: '@Twig\Environment'
+            $client: '@Symfony\Contracts\HttpClient\HttpClientInterface'
+            $abstractApiKey: '%env(ABSTRACT_API_KEY)%'
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones

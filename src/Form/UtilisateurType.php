@@ -3,18 +3,18 @@
 namespace App\Form;
 
 use App\Entity\Utilisateur;
-use App\Entity\Adresse;
 use App\Enum\Role;
-use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
+use Symfony\Component\Form\FormBuilderInterface;
+use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\EmailType;
 use Symfony\Component\Form\Extension\Core\Type\PasswordType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\Extension\Core\Type\FileType;
-use Symfony\Component\Form\FormBuilderInterface;
-use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Validator\Constraints\File;
+use App\Form\AdresseType;
+use VictorPrdh\RecaptchaBundle\Form\ReCaptchaType;
 
 class UtilisateurType extends AbstractType
 {
@@ -35,14 +35,21 @@ class UtilisateurType extends AbstractType
             ]);
 
         // Only show role field for admin-created users (not for signup)
-        if (!($options['is_signup'] ?? false && ($options['is_update'] ?? false) )) {
+        if (!($options['is_signup'] ?? false && ($options['is_update'] ?? false))) {
             $builder->add('role', ChoiceType::class, [
                 'choices' => Role::cases(),
                 'choice_label' => fn(Role $role) => $role->value,
                 'choice_value' => fn(?Role $role) => $role?->value,
             ]);
         }
-
+        if ($options['is_signup'] ?? false) {
+            $builder->add("recaptcha", ReCaptchaType::class, [
+                'mapped' => false,
+                'constraints' => [
+                    new \VictorPrdh\RecaptchaBundle\Validator\Constraints\IsValidCaptcha()
+                ],
+            ]);
+        }
         if (($options['is_update'] ?? false) && !($options['is_signup'] ?? false)) {
             $builder->add('imageurl', FileType::class, [
                 'label' => 'Upload your profile image',
@@ -56,16 +63,15 @@ class UtilisateurType extends AbstractType
                 ],
             ]);
         }
-        }
-    
+    }
 
     public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults([
             'data_class' => Utilisateur::class,
             'is_creation' => false,
-            'is_signup' => false,// Default to admin form (shows role field)
-            'is_update'=> true,
+            'is_signup' => false,
+            'is_update' => true,
         ]);
     }
 }

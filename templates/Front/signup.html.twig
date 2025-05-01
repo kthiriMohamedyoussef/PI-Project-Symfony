@@ -377,6 +377,7 @@
 {% endblock %}
 
 {% block body %}
+
 <nav class="navbar">
     <a href="#" class="navbar-brand">
         <img src="{{ asset('images/eventopiaa.png') }}" alt="Eventopia Logo" class="logo-img" height="40px"></i> Eventopia
@@ -452,6 +453,11 @@
                             </div>
                         </div>
                     </div>
+                    {{ form_row(form.recaptcha) }} 
+                    {# must be the same name of this put on the FormBuilder #}
+                
+                    {{ form_errors(form.recaptcha) }}
+                    {# That will display the error of the captcha to user #}
 
                     <div class="form-group full-width">
                         <button type="submit" class="btn-signup">
@@ -459,16 +465,22 @@
                         </button>
                     </div>
                 </div>
+                {% if form.g_recaptcha_response is defined %}
+                <div class="g-recaptcha" data-sitekey="6LdPLSorAAAAAJSDWXIIsAK9V_TEGCi9yKMrjMAI"></div>
+            {% endif %}
             {{ form_end(form) }}
 
             <div class="login-link">
                 Already have an account? <a href="{{ path('app_login') }}">Login</a>
             </div>
+            
         </div>
     </div>
 </div>
 
 <script>
+    
+    
     document.addEventListener('DOMContentLoaded', function() {
         // Toggle password visibility
         document.querySelector('.toggle-password').addEventListener('click', function() {
