@@ -75,6 +75,24 @@ cd eventopia
 ```bash
 composer install
 ```
+## 🧠 Sentiment Analysis Setup (VADER)
+
+Eventopia uses **VADER Sentiment Analysis** via Python to analyze user feedback and comments.
+
+### 🐍 Install Python and VADER
+
+1. **Install Python 3.6 or higher**
+
+   Check if Python is installed:
+
+   ```bash
+   python3 --version
+    ```
+   If not installed, download it from the official website: https://www.python.org/downloads/
+2. **Install VADER Sentiment Analysis library:**
+   ```bash
+   pip install vaderSentiment
+    ```
 
 ### 3. Set Environment Variables
 
